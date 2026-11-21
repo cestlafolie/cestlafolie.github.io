@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#121110">
 <meta name="color-scheme" content="dark">
-<title>jeux.</title>
+<title>Vote secret H</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23121110'/%3E%3Ccircle cx='24' cy='32' r='9' fill='%23d4f54a'/%3E%3Ccircle cx='42' cy='32' r='9' fill='%23ff5b3a'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://ntfy.sh" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,21 +14,32 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header class="top">
+<div class="scrim" id="scrim"></div>
+<!-- Menu latéral : un bouton par onglet (data-tab = id du module sans « mod- ») -->
+<aside class="sidenav" id="side">
   <a class="mark" href="./">jeux<span>.</span></a>
+  <nav class="tabs">
+    <p class="tabs-t">Onglets</p>
+    <button class="tab" data-tab="vote"><i class="tab-ico"><b></b><b></b></i>Vote secret H</button>
+  </nav>
+  <p class="sidenav-foot">entre nous</p>
+</aside>
+
+<header class="top">
+  <button class="burger" id="burger" aria-label="Menu"><span></span><span></span></button>
+  <span class="top-title" id="topTitle">Vote secret H</span>
   <span class="live" id="voteLive"><i></i><span>connexion</span></span>
 </header>
 
 <!--
-  Chaque fonctionnalité est un « module » : une <section class="module"> ici
-  + un fichier JS à part (ex. vote.js). Pour en ajouter un, copier la structure
-  d'un module existant et charger son script en bas de page.
+  Chaque onglet est un « module » : une <section class="module" id="mod-xxx"> ici,
+  un bouton <button class="tab" data-tab="xxx"> dans le menu, et son propre fichier JS.
 -->
 <main class="modules">
 
   <!-- ===== Module : vote oui / non ===== -->
-  <section class="module" id="mod-vote">
-    <div class="tag"><span>Vote</span><span id="vRound">Manche 1</span></div>
+  <section class="module" id="mod-vote" data-title="Vote secret H">
+    <div class="tag"><span>Vote secret H</span><span id="vRound">Manche 1</span></div>
     <h2 class="q">On joue&nbsp;?</h2>
 
     <div class="vote-btns">

@@ -33,3 +33,26 @@ function tweenText(el, to, fmt, ms = 450) {
   };
   el._raf = requestAnimationFrame(step);
 }
+
+// ===== Onglets (menu latéral) =====
+(() => {
+  const side = $('side'), scrim = $('scrim');
+  const tabs = [...document.querySelectorAll('.tab')];
+  const close = () => { side.classList.remove('open'); scrim.classList.remove('show'); };
+  function show(name, push) {
+    const mod = document.getElementById('mod-' + name) || document.querySelector('.module');
+    name = mod.id.slice(4);
+    document.querySelectorAll('.module').forEach(m => m.classList.toggle('active', m === mod));
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    const title = mod.dataset.title || name;
+    $('topTitle').textContent = title; document.title = title;
+    if (push && location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
+    close();
+  }
+  tabs.forEach(t => t.onclick = () => show(t.dataset.tab, true));
+  $('burger').onclick = () => { side.classList.add('open'); scrim.classList.add('show'); };
+  scrim.onclick = close;
+  addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  addEventListener('hashchange', () => show(location.hash.slice(1)));
+  show(location.hash.slice(1) || tabs[0].dataset.tab);
+})();
