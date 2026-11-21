@@ -99,3 +99,6 @@ input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--br
 .stepper input{text-align:center;font-weight:700;font-size:1.1rem}
 
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+/* clignotement du point « en direct » à chaque message reçu */
+.live i.tick{animation:tick .45s var(--ease)}
+@keyframes tick{0%{transform:scale(1)}40%{transform:scale(1.8)}100%{transform:scale(1)}}

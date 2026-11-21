@@ -99,21 +99,53 @@ function handle(d) {
   scheduleRender();
 }
 
+// ---- connexion temps réel
+// Le serveur POUSSE chaque message dès qu'il arrive (quasi instantané, pas d'attente).
+// Toutes les 0,5 s on vérifie que la connexion est vivante ; sinon on la relance tout de suite.
+const CACHE = 'badgheure_vote_cache', MAX_AGE = 11 * 3600;   // ntfy garde les messages 12 h
+let cache = [], lastEvent = 0, fails = 0, retryAt = 0, retryT = null;
+
+function ingest(m, fromCache) {
+  let d;
+  try { d = JSON.parse(m.message); } catch { return; }
+  if (!m.id || seen.has(m.id)) return; seen.add(m.id);
+  if (!fromCache) { cache.push({ id: m.id, time: m.time, message: m.message }); saveCache(); pulseDot(); }
+  if (d.k === 'reset' || d.k === 'players') queue = queue.then(() => verify(d)).then(ok => { if (ok) handle(d); });
+  else queue = queue.then(() => handle(d));
+}
+let saveT = null;
+function saveCache() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(CACHE, JSON.stringify(cache.slice(-500))); } catch {} }, 300); }
+function restoreCache() {   // affiche tout de suite le dernier état connu, avant même la connexion
+  try {
+    const now = Date.now() / 1000;
+    cache = (JSON.parse(localStorage.getItem(CACHE)) || []).filter(m => m && m.time > now - MAX_AGE);
+    cache.forEach(m => ingest(m, true));
+  } catch { cache = []; }
+}
+function pulseDot() { const i = $('voteLive').firstElementChild; i.classList.remove('tick'); void i.offsetWidth; i.classList.add('tick'); i.addEventListener('animationend', () => i.classList.remove('tick'), { once: true }); }
+
 function connect() {
   if (src) src.close();
+  lastEvent = Date.now();
   src = new EventSource(TOPIC + '/sse?since=all');
-  src.onopen = () => { setLive(true, 'En direct'); setTimeout(() => live = true, 1500); };
-  src.onerror = () => setLive(false, 'Reconnexion…');
-  src.onmessage = ev => {
-    let m, d;
-    try { m = JSON.parse(ev.data); d = JSON.parse(m.message); } catch { return; }
-    if (!m.id || seen.has(m.id)) return; seen.add(m.id);
-    if (d.k === 'reset' || d.k === 'players') queue = queue.then(() => verify(d)).then(ok => { if (ok) handle(d); });
-    else queue = queue.then(() => handle(d));
+  src.onopen = () => { fails = 0; lastEvent = Date.now(); setLive(true, 'En direct'); setTimeout(() => live = true, 1200); };
+  src.addEventListener('keepalive', () => lastEvent = Date.now());
+  src.addEventListener('open', () => lastEvent = Date.now());
+  src.onerror = () => {   // on gère nous-mêmes la reconnexion, plus vite que le navigateur
+    src.close(); fails++; const wait = Math.min(250 * 2 ** (fails - 1), 5000); retryAt = Date.now() + wait;
+    clearTimeout(retryT); retryT = setTimeout(() => { if (!document.hidden && src.readyState === 2) connect(); }, wait);
+    setLive(false, navigator.onLine === false ? 'Hors ligne' : 'Reconnexion…');
   };
+  src.onmessage = ev => { lastEvent = Date.now(); try { ingest(JSON.parse(ev.data), false); } catch {} };
 }
-// retour sur l'appli (mobile) : relance la connexion si elle est tombée
-document.addEventListener('visibilitychange', () => { if (!document.hidden && (!src || src.readyState === 2)) connect(); });
+setInterval(() => {
+  if (document.hidden) return;
+  const now = Date.now();
+  if (!src || (src.readyState === 2 && now >= retryAt)) connect();
+  else if (src.readyState === 1 && now - lastEvent > 70000) connect();   // connexion muette : on la relance
+}, 500);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && (!src || src.readyState !== 1)) { retryAt = 0; connect(); } });
+addEventListener('online', () => { retryAt = 0; connect(); });
 
 // ---- voter
 document.querySelectorAll('.vote-btn').forEach(b => b.onclick = async () => {
@@ -184,6 +216,7 @@ $('btnVoteReset').onclick = async () => {
 
 // ---- démarrage
 { const s = localStorage.getItem('badgheure_admin'); if (s) setAdmin(b64(s)).catch(() => localStorage.removeItem('badgheure_admin')); }
+restoreCache();
 render();
 connect();
 })();
