@@ -55,4 +55,30 @@ function tweenText(el, to, fmt, ms = 450) {
   addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
   addEventListener('hashchange', () => show(location.hash.slice(1)));
   show(location.hash.slice(1) || tabs[0].dataset.tab);
+
+  // Gestes : glisser depuis le bord gauche pour ouvrir, glisser le menu vers la gauche pour fermer
+  let x0 = null, y0 = 0, dx = 0, mode = null;
+  const W = () => side.getBoundingClientRect().width;
+  addEventListener('touchstart', e => {
+    const t = e.touches[0], open = side.classList.contains('open');
+    if (!open && t.clientX < 24) mode = 'open';
+    else if (open && t.clientX < W() + 20) mode = 'close';
+    else return;
+    x0 = t.clientX; y0 = t.clientY; dx = 0;
+  }, { passive: true });
+  addEventListener('touchmove', e => {
+    if (x0 === null) return;
+    const t = e.touches[0]; dx = t.clientX - x0;
+    if (Math.abs(t.clientY - y0) > Math.abs(dx) && Math.abs(dx) < 10) { x0 = null; side.classList.remove('drag'); side.style.transform = ''; return; }
+    side.classList.add('drag');
+    const off = mode === 'open' ? Math.min(0, -W() + dx) : Math.min(0, dx);
+    side.style.transform = 'translateX(' + off + 'px)';
+  }, { passive: true });
+  addEventListener('touchend', () => {
+    if (x0 === null) return;
+    side.classList.remove('drag'); side.style.transform = '';
+    if (mode === 'open' && dx > 60) $('burger').onclick();
+    if (mode === 'close' && dx < -60) close();
+    x0 = null;
+  });
 })();
