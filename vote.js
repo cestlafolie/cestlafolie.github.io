@@ -11,7 +11,7 @@ const TOPIC = 'https://ntfy.sh/badgheure-vote-k7q2m9x4w8d1p5z3';
 const VADMIN={"pub": "BMragD96AUSFozDC1lvCc4NOii6S7sUlmi2j4JfSGvWxyN7KZDLT8lIQW0GVxmGXN3kjOI+GUkP8UpjLfLZRW4Q=", "salt": "YRCwiWqxX2biEY1F/CEZKg==", "iv": "r4Bvt6uCLQcO+0XD", "ct": "+Z2X+kawgw5VcNxw809Xlfi4WCDJ96eiSRc4Ah9D/+LJmoykSimKdyv4ZVQSSFSPB8e8JQVcCNFHG1gqyOxzrjBmEUeUPX1m/3T7GpX6rCi7a+GwpDAEWfa4CYlKLF4jGTMsFLKP2t2SxrFIP/zldUhLdtbtG9nr2WDUWpsndQZdW3bLPgRqsfmxYyRO2l+K5GhcavZmSmx7BA=="};
 
 // ---- état
-let timeline = [], seen = new Set(), src = null, pending = null, live = false, lastRounds = null, adminKey = null;
+let timeline = [], seen = new Set(), pending = null, live = false, lastRounds = null, adminKey = null;
 const nonces = new Set();
 let queue = Promise.resolve();
 
@@ -103,7 +103,7 @@ function handle(d) {
 // Le serveur POUSSE chaque message dès qu'il arrive (quasi instantané, pas d'attente).
 // Toutes les 0,5 s on vérifie que la connexion est vivante ; sinon on la relance tout de suite.
 const CACHE = 'badgheure_vote_cache', MAX_AGE = 11 * 3600;   // ntfy garde les messages 12 h
-let cache = [], lastEvent = 0, fails = 0, retryAt = 0, retryT = null;
+let cache = [];
 
 function ingest(m, fromCache) {
   let d;
@@ -124,28 +124,47 @@ function restoreCache() {   // affiche tout de suite le dernier état connu, ava
 }
 function pulseDot() { const i = $('voteLive').firstElementChild; i.classList.remove('tick'); void i.offsetWidth; i.classList.add('tick'); i.addEventListener('animationend', () => i.classList.remove('tick'), { once: true }); }
 
-function connect() {
-  if (src) src.close();
-  lastEvent = Date.now();
-  src = new EventSource(TOPIC + '/sse?since=all');
-  src.onopen = () => { fails = 0; lastEvent = Date.now(); setLive(true, 'En direct'); setTimeout(() => live = true, 1200); };
-  src.addEventListener('keepalive', () => lastEvent = Date.now());
-  src.addEventListener('open', () => lastEvent = Date.now());
-  src.onerror = () => {   // on gère nous-mêmes la reconnexion, plus vite que le navigateur
-    src.close(); fails++; const wait = Math.min(250 * 2 ** (fails - 1), 5000); retryAt = Date.now() + wait;
-    clearTimeout(retryT); retryT = setTimeout(() => { if (!document.hidden && src.readyState === 2) connect(); }, wait);
-    setLive(false, navigator.onLine === false ? 'Hors ligne' : 'Reconnexion…');
-  };
-  src.onmessage = ev => { lastEvent = Date.now(); try { ingest(JSON.parse(ev.data), false); } catch {} };
+// Deux connexions ouvertes en parallèle : si l'une tombe, l'autre reçoit déjà les messages
+// (aucune coupure), et celle qui est tombée se relance aussitôt (0 s, puis 0,1 s, 0,2 s…).
+// Les doublons sont ignorés grâce à l'identifiant unique de chaque message.
+const LINKS = 2;
+const links = Array.from({ length: LINKS }, () => ({ es: null, last: 0, fails: 0, retryAt: 0 }));
+const isOpen = l => l.es && l.es.readyState === 1;
+function updateStatus() {
+  const n = links.filter(isOpen).length;
+  if (n) { setLive(true, 'En direct'); if (!live) setTimeout(() => live = true, 1200); }
+  else setLive(false, navigator.onLine === false ? 'Hors ligne' : 'Reconnexion…');
 }
+function open(l) {
+  if (l.es) l.es.close();
+  l.last = Date.now();
+  const es = l.es = new EventSource(TOPIC + '/sse?since=all');
+  const alive = () => { if (l.es === es) l.last = Date.now(); };
+  es.onopen = () => { if (l.es !== es) return; l.fails = 0; alive(); updateStatus(); };
+  es.addEventListener('keepalive', alive);
+  es.addEventListener('open', alive);
+  es.onmessage = ev => { alive(); try { ingest(JSON.parse(ev.data), false); } catch {} };
+  es.onerror = () => {
+    if (l.es !== es) return;
+    es.close(); l.fails++;
+    l.retryAt = Date.now() + (l.fails === 1 ? 0 : Math.min(100 * 2 ** (l.fails - 2), 3000));
+    updateStatus();
+    if (l.fails === 1) open(l);            // 1re tentative : immédiate
+  };
+}
+function connectAll(force) { links.forEach(l => { if (force || !isOpen(l)) { l.fails = 0; open(l); } }); }
+// surveillance toutes les 0,1 s
 setInterval(() => {
   if (document.hidden) return;
   const now = Date.now();
-  if (!src || (src.readyState === 2 && now >= retryAt)) connect();
-  else if (src.readyState === 1 && now - lastEvent > 70000) connect();   // connexion muette : on la relance
-}, 500);
-document.addEventListener('visibilitychange', () => { if (!document.hidden && (!src || src.readyState !== 1)) { retryAt = 0; connect(); } });
-addEventListener('online', () => { retryAt = 0; connect(); });
+  links.forEach(l => {
+    if (!l.es || (l.es.readyState === 2 && now >= l.retryAt)) open(l);
+    else if (l.es.readyState === 1 && now - l.last > 70000) open(l);   // connexion muette
+  });
+}, 100);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) connectAll(false); });
+addEventListener('online', () => connectAll(true));
+addEventListener('offline', updateStatus);
 
 // ---- voter
 document.querySelectorAll('.vote-btn').forEach(b => b.onclick = async () => {
@@ -218,5 +237,5 @@ $('btnVoteReset').onclick = async () => {
 { const s = localStorage.getItem('badgheure_admin'); if (s) setAdmin(b64(s)).catch(() => localStorage.removeItem('badgheure_admin')); }
 restoreCache();
 render();
-connect();
+connectAll(true);
 })();
