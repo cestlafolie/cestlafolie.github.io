@@ -43,12 +43,22 @@ function tweenText(el, to, fmt, ms = 450) {
     const mod = document.getElementById('mod-' + name) || document.querySelector('.module');
     name = mod.id.slice(4);
     document.querySelectorAll('.module').forEach(m => m.classList.toggle('active', m === mod));
-    tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    tabs.concat(railTabs).forEach(t => t.classList.toggle('active', t.dataset.tab === name));
     const title = mod.dataset.title || name;
     $('topTitle').textContent = title; document.title = title;
     if (push && location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
     close();
   }
+  // Copie de chaque onglet dans la barre de gauche (icône + nom court)
+  const rail = $('rail');
+  const railTabs = tabs.map(t => {
+    const b = document.createElement('button');
+    b.className = 'rail-tab'; b.dataset.tab = t.dataset.tab; b.setAttribute('aria-label', t.textContent.trim());
+    b.innerHTML = t.querySelector('.tab-ico').outerHTML + '<span></span>';
+    b.lastChild.textContent = t.dataset.short || t.textContent.trim().split(' ')[0];
+    b.onclick = () => show(t.dataset.tab, true);
+    rail.appendChild(b); return b;
+  });
   tabs.forEach(t => t.onclick = () => show(t.dataset.tab, true));
   $('burger').onclick = () => { side.classList.add('open'); scrim.classList.add('show'); };
   scrim.onclick = close;
