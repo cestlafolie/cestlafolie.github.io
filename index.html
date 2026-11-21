@@ -98,16 +98,17 @@ function setLive(cls,txt){const el=document.getElementById('voteLive');el.classN
 function vPublish(obj){return fetch(VTOPIC,{method:'POST',body:JSON.stringify(obj)}).then(r=>{if(!r.ok)throw 0})}
 // bulletins valides : depuis la dernière réinitialisation, seulement les N premiers votants (N = nombre de joueurs)
 function vTally(){const ev=vEvents.filter(e=>e.t>=vResetAt).sort((x,y)=>x.t-y.t||x.o-y.o);const max=vPlayers.n,ballots=new Map();
-  ev.forEach(e=>{if(ballots.has(e.u)||!max||ballots.size<max)ballots.set(e.u,e.v)});return ballots}
+  ev.forEach(e=>{if(!ballots.has(e.u)&&(!max||ballots.size<max))ballots.set(e.u,e.v)});// seul le 1er vote compte jusqu'à la réinitialisation
+  return ballots}
 function renderVote(){const ballots=vTally(),max=vPlayers.n;let oui=0,non=0;ballots.forEach(v=>v==='oui'?oui++:non++);
   const tot=oui+non,po=tot?Math.round(oui/tot*100):0,pn=tot?100-po:0,full=max>0&&tot>=max;
   document.getElementById('vOuiTxt').textContent=oui+' · '+po+' %';document.getElementById('vNonTxt').textContent=non+' · '+pn+' %';
   document.getElementById('vOuiBar').style.width=po+'%';document.getElementById('vNonBar').style.width=pn+'%';
   document.getElementById('vTotal').textContent=(max?tot+' / '+max+' joueurs ont voté':tot+(tot>1?' votes':' vote'))+(full?' — résultat : '+(oui>non?'OUI ✅':non>oui?'NON ❌':'égalité'):'');
   const pl=document.getElementById('votePlayers');if(document.activeElement!==pl)pl.value=max||'';
-  const mine=ballots.get(vMe),blocked=full&&!mine;
+  const mine=ballots.get(vMe),blocked=!!mine||full;
   document.querySelectorAll('.vote-btn').forEach(b=>{b.classList.toggle('on',!!mine&&mine===b.dataset.v);b.disabled=blocked});
-  document.getElementById('voteMine').textContent=mine?'Ton vote : '+mine.toUpperCase()+' (anonyme). Tu peux changer d’avis.':blocked?'Tout le monde a déjà voté ('+max+' joueurs).':'Tu n’as pas encore voté.'}
+  document.getElementById('voteMine').textContent=mine?'Ton vote : '+mine.toUpperCase()+' (anonyme). Vote définitif jusqu\u2019à la prochaine réinitialisation.':blocked?'Tout le monde a déjà voté ('+max+' joueurs).':'Tu n’as pas encore voté.'}
 // --- Admin : seuls les messages signés avec la clé admin (débloquée par mot de passe) sont acceptés
 const VADMIN={"pub": "BMragD96AUSFozDC1lvCc4NOii6S7sUlmi2j4JfSGvWxyN7KZDLT8lIQW0GVxmGXN3kjOI+GUkP8UpjLfLZRW4Q=", "salt": "YRCwiWqxX2biEY1F/CEZKg==", "iv": "r4Bvt6uCLQcO+0XD", "ct": "+Z2X+kawgw5VcNxw809Xlfi4WCDJ96eiSRc4Ah9D/+LJmoykSimKdyv4ZVQSSFSPB8e8JQVcCNFHG1gqyOxzrjBmEUeUPX1m/3T7GpX6rCi7a+GwpDAEWfa4CYlKLF4jGTMsFLKP2t2SxrFIP/zldUhLdtbtG9nr2WDUWpsndQZdW3bLPgRqsfmxYyRO2l+K5GhcavZmSmx7BA=="};
 const b64=x=>Uint8Array.from(atob(x),c=>c.charCodeAt(0)), tob64=buf=>btoa(String.fromCharCode(...new Uint8Array(buf)));
@@ -144,7 +145,7 @@ function vConnect(){vSrc=new EventSource(VTOPIC+'/sse?since=all');
 document.getElementById('votePlayers').onchange=async e=>{if(!vAdminKey)return;const n=Math.max(0,Math.min(99,Math.round(+e.target.value||0)));
   try{await vAdminPublish({k:'players',n});toast(n?n+' joueurs : '+n+' votes max':'Sans limite de joueurs')}catch{toast('Échec, réessaie')}};
 document.getElementById('btnVoteReset').onclick=async()=>{if(!vAdminKey)return;if(!confirm('Réinitialiser le vote pour tout le monde ?'))return;try{await vAdminPublish({k:'reset'});toast('Vote réinitialisé')}catch{toast('Échec, réessaie')}};
-document.querySelectorAll('.vote-btn').forEach(b=>b.onclick=async()=>{if(b.disabled)return;try{await vPublish({k:'v',v:b.dataset.v,u:vMe});toast('Vote enregistré')}catch{toast('Échec de l\u2019envoi, réessaie')}});
+document.querySelectorAll('.vote-btn').forEach(b=>b.onclick=async()=>{if(b.disabled)return;document.querySelectorAll('.vote-btn').forEach(x=>x.disabled=true);try{await vPublish({k:'v',v:b.dataset.v,u:vMe});toast('Vote enregistré')}catch{toast('Échec de l\u2019envoi, réessaie');renderVote()}});
 renderVote();vConnect();
 </script>
 </body>
