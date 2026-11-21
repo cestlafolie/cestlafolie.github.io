@@ -54,6 +54,12 @@
   .vote-row .lr{display:flex;justify-content:space-between;font-size:.88rem;font-weight:700;margin-bottom:5px;font-variant-numeric:tabular-nums}
   .vote-bar{height:14px;border-radius:7px;background:#eef0f6;overflow:hidden}
   .vote-bar div{height:100%;border-radius:7px;transition:width .4s ease;width:0}
+  .vote-last{margin-top:16px;border-radius:13px;padding:12px 14px;text-align:center;background:#eef0f6}
+  .vote-last.oui{background:var(--green-soft)}.vote-last.non{background:var(--red-soft)}
+  .vote-last .vl-k{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--muted)}
+  .vote-last .vl-v{font-size:1.4rem;font-weight:800;margin:2px 0}
+  .vote-last.oui .vl-v{color:var(--green)}.vote-last.non .vl-v{color:var(--red)}
+  .vote-last .vl-d{font-size:.78rem;color:var(--muted)}
   .vote-total{font-size:.8rem;color:var(--muted);margin-top:4px}
   .wrap{max-width:560px;margin:0 auto;padding:28px 16px calc(28px + env(safe-area-inset-bottom))}
   input,select,textarea{font-size:16px}
@@ -67,6 +73,7 @@
             <span class="vote-live" id="voteLive"><i></i><span>Connexion…</span></span>
             <button class="chip" id="btnAdmin">🔒 Admin</button>
           </div>
+          <div class="vote-last" id="vLast" style="display:none"></div>
           <div class="vote-btns">
             <button class="vote-btn oui" data-v="oui">👍 Oui</button>
             <button class="vote-btn non" data-v="non">👎 Non</button>
@@ -96,19 +103,32 @@ let vEvents=[], vResetAt=0, vPlayers={n:0,t:-1}, vSeen=new Set(), vSrc=null, vOr
 const vMe=(()=>{let v=localStorage.getItem('badgheure_voter');if(!v){const a=new Uint8Array(12);crypto.getRandomValues(a);v=Array.from(a,b=>(b%36).toString(36)).join('');localStorage.setItem('badgheure_voter',v)}return v})();
 function setLive(cls,txt){const el=document.getElementById('voteLive');el.className='vote-live '+cls;el.querySelector('span').textContent=txt}
 function vPublish(obj){return fetch(VTOPIC,{method:'POST',body:JSON.stringify(obj)}).then(r=>{if(!r.ok)throw 0})}
-// bulletins valides : depuis la dernière réinitialisation, seulement les N premiers votants (N = nombre de joueurs)
-function vTally(){const ev=vEvents.filter(e=>e.t>=vResetAt).sort((x,y)=>x.t-y.t||x.o-y.o);const max=vPlayers.n,ballots=new Map();
-  ev.forEach(e=>{if(!ballots.has(e.u)&&(!max||ballots.size<max))ballots.set(e.u,e.v)});// seul le 1er vote compte jusqu'à la réinitialisation
-  return ballots}
-function renderVote(){const ballots=vTally(),max=vPlayers.n;let oui=0,non=0;ballots.forEach(v=>v==='oui'?oui++:non++);
-  const tot=oui+non,po=tot?Math.round(oui/tot*100):0,pn=tot?100-po:0,full=max>0&&tot>=max;
+// Manches : depuis la dernière réinitialisation admin, dès que N joueurs ont voté (N = nombre de joueurs),
+// la manche est terminée, son résultat est affiché et une nouvelle manche démarre automatiquement.
+// Dans une manche, seul le 1er vote de chaque personne compte.
+let vLastRoundKey=null;
+function vTally(){const ev=vEvents.filter(e=>e.t>=vResetAt).sort((x,y)=>x.t-y.t||x.o-y.o);const max=vPlayers.n;let ballots=new Map(),last=null,rounds=0;
+  ev.forEach(e=>{if(ballots.has(e.u))return;ballots.set(e.u,e.v);
+    if(max&&ballots.size>=max){let o=0,n=0;ballots.forEach(v=>v==='oui'?o++:n++);last={oui:o,non:n,t:e.t};rounds++;ballots=new Map()}});
+  return {ballots,last,rounds}}
+function vVerdict(o,n){return o>n?'OUI ✅':n>o?'NON ❌':'égalité'}
+function renderVote(){const {ballots,last,rounds}=vTally(),max=vPlayers.n;let oui=0,non=0;ballots.forEach(v=>v==='oui'?oui++:non++);
+  const tot=oui+non,po=tot?Math.round(oui/tot*100):0,pn=tot?100-po:0;
   document.getElementById('vOuiTxt').textContent=oui+' · '+po+' %';document.getElementById('vNonTxt').textContent=non+' · '+pn+' %';
   document.getElementById('vOuiBar').style.width=po+'%';document.getElementById('vNonBar').style.width=pn+'%';
-  document.getElementById('vTotal').textContent=(max?tot+' / '+max+' joueurs ont voté':tot+(tot>1?' votes':' vote'))+(full?' — résultat : '+(oui>non?'OUI ✅':non>oui?'NON ❌':'égalité'):'');
+  document.getElementById('vTotal').textContent=max?tot+' / '+max+' joueurs ont voté':tot+(tot>1?' votes':' vote');
+  const lr=document.getElementById('vLast');
+  if(last){lr.style.display='';lr.className='vote-last '+(last.oui>last.non?'oui':last.non>last.oui?'non':'eq');
+    lr.innerHTML='';const t=document.createElement('div');t.className='vl-k';t.textContent='Résultat du dernier vote';
+    const v=document.createElement('div');v.className='vl-v';v.textContent=vVerdict(last.oui,last.non);
+    const d=document.createElement('div');d.className='vl-d';d.textContent=last.oui+' oui · '+last.non+' non — nouveau vote ouvert';lr.append(t,v,d)}
+  else lr.style.display='none';
+  const key=last?rounds+':'+last.t:null;if(vLive&&key&&vLastRoundKey!==null&&key!==vLastRoundKey)toast('Vote terminé : '+vVerdict(last.oui,last.non));vLastRoundKey=key||'';
   const pl=document.getElementById('votePlayers');if(document.activeElement!==pl)pl.value=max||'';
-  const mine=ballots.get(vMe),blocked=!!mine||full;
+  const mine=ballots.get(vMe),blocked=!!mine;
   document.querySelectorAll('.vote-btn').forEach(b=>{b.classList.toggle('on',!!mine&&mine===b.dataset.v);b.disabled=blocked});
-  document.getElementById('voteMine').textContent=mine?'Ton vote : '+mine.toUpperCase()+' (anonyme). Vote définitif jusqu\u2019à la prochaine réinitialisation.':blocked?'Tout le monde a déjà voté ('+max+' joueurs).':'Tu n’as pas encore voté.'}
+  document.getElementById('voteMine').textContent=mine?'Ton vote : '+mine.toUpperCase()+' (anonyme). Définitif jusqu’à la fin de ce vote.':'Tu n’as pas encore voté.'}
+let vLive=false;setTimeout(()=>vLive=true,2500);
 // --- Admin : seuls les messages signés avec la clé admin (débloquée par mot de passe) sont acceptés
 const VADMIN={"pub": "BMragD96AUSFozDC1lvCc4NOii6S7sUlmi2j4JfSGvWxyN7KZDLT8lIQW0GVxmGXN3kjOI+GUkP8UpjLfLZRW4Q=", "salt": "YRCwiWqxX2biEY1F/CEZKg==", "iv": "r4Bvt6uCLQcO+0XD", "ct": "+Z2X+kawgw5VcNxw809Xlfi4WCDJ96eiSRc4Ah9D/+LJmoykSimKdyv4ZVQSSFSPB8e8JQVcCNFHG1gqyOxzrjBmEUeUPX1m/3T7GpX6rCi7a+GwpDAEWfa4CYlKLF4jGTMsFLKP2t2SxrFIP/zldUhLdtbtG9nr2WDUWpsndQZdW3bLPgRqsfmxYyRO2l+K5GhcavZmSmx7BA=="};
 const b64=x=>Uint8Array.from(atob(x),c=>c.charCodeAt(0)), tob64=buf=>btoa(String.fromCharCode(...new Uint8Array(buf)));
