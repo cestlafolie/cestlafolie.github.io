@@ -220,24 +220,6 @@
     .topbar{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
     .page-head h1{font-size:1.3rem}
   }
-
-  /* Vote en direct */
-  .vote-live{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-  .vote-live i{width:8px;height:8px;border-radius:50%;background:var(--amber)}
-  .vote-live.on i{background:var(--green);animation:pulse 1.6s infinite}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(22,163,74,.5)}100%{box-shadow:0 0 0 8px rgba(22,163,74,0)}}
-  .vote-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
-  .vote-btn{border:2px solid var(--line);background:#fff;border-radius:14px;padding:18px 10px;font-size:1.15rem;font-weight:800;cursor:pointer;font-family:inherit;transition:.12s;min-height:64px;touch-action:manipulation}
-  .vote-btn.oui{color:var(--green)}.vote-btn.non{color:var(--red)}
-  .vote-btn.oui.on{background:var(--green);border-color:var(--green);color:#fff}
-  .vote-btn.non.on{background:var(--red);border-color:var(--red);color:#fff}
-  .vote-btn:disabled{opacity:.45;cursor:not-allowed}
-  .vote-res{margin-top:6px}
-  .vote-row{margin-bottom:12px}
-  .vote-row .lr{display:flex;justify-content:space-between;font-size:.88rem;font-weight:700;margin-bottom:5px;font-variant-numeric:tabular-nums}
-  .vote-bar{height:14px;border-radius:7px;background:#eef0f6;overflow:hidden}
-  .vote-bar div{height:100%;border-radius:7px;transition:width .4s ease;width:0}
-  .vote-total{font-size:.8rem;color:var(--muted);margin-top:4px}
 </style>
 </head>
 <body>
@@ -256,7 +238,6 @@
     <button class="nav-item" data-view="saisie"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Saisie</button>
     <button class="nav-item" data-view="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Calendrier</button>
     <button class="nav-item" data-view="histo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M7 14l4-4 3 3 5-6"/></svg>Historique</button>
-    <button class="nav-item" data-view="vote"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Vote</button>
     <div class="nav-title">Réglages</div>
     <button class="nav-item" data-view="params"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Paramètres</button>
     <div class="side-foot">Données locales à ce navigateur.<br>Pense à exporter régulièrement.</div>
@@ -343,31 +324,6 @@
           <div class="toolbar"><div class="weeksel"><button id="prevWeek">‹</button><span id="weekLabel">Semaine</span><button id="nextWeek">›</button></div><div class="spacer"></div><button class="chip" id="btnCsv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Exporter CSV</button></div>
           <div class="tablewrap"><table><thead><tr><th>Jour</th><th>Date</th><th>Arr.</th><th>Dép.</th><th>Pause</th><th>Net</th><th>Solde</th><th>Type</th><th></th></tr></thead><tbody id="tbody"></tbody></table></div>
           <div class="empty" id="emptyMsg">Aucune journée cette semaine.</div>
-        </div>
-      </section>
-      <section class="view" id="view-vote">
-        <div class="page-head"><h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Vote</h1><p>Vote anonyme oui ou non, résultat en direct. L'admin fixe le nombre de joueurs et réinitialise.</p></div>
-        <div class="card">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-            <span class="vote-live" id="voteLive"><i></i><span>Connexion…</span></span>
-            <button class="chip" id="btnAdmin">🔒 Admin</button>
-          </div>
-          <div class="vote-btns">
-            <button class="vote-btn oui" data-v="oui">👍 Oui</button>
-            <button class="vote-btn non" data-v="non">👎 Non</button>
-          </div>
-          <div class="hint" id="voteMine" style="margin:-6px 0 14px">Tu n'as pas encore voté.</div>
-          <div class="vote-res">
-            <div class="vote-row"><div class="lr"><span style="color:var(--green)">Oui</span><span id="vOuiTxt">0</span></div><div class="vote-bar"><div id="vOuiBar" style="background:var(--green)"></div></div></div>
-            <div class="vote-row"><div class="lr"><span style="color:var(--red)">Non</span><span id="vNonTxt">0</span></div><div class="vote-bar"><div id="vNonBar" style="background:var(--red)"></div></div></div>
-            <div class="vote-total" id="vTotal">0 vote</div>
-          </div>
-        </div>
-        <div class="card" id="adminPanel" style="display:none">
-          <div class="card-h"><span class="d"></span>Admin du vote</div>
-          <div class="field"><label for="votePlayers">Nombre de joueurs (= votes max)</label><input type="number" id="votePlayers" min="0" max="99" step="1" inputmode="numeric" placeholder="illimité"></div>
-          <button class="btn btn-full" id="btnVoteReset" style="background:var(--red-soft);color:var(--red)">Réinitialiser le vote</button>
-          <button class="chip" id="btnAdminOut" style="margin-top:12px">Quitter le mode admin</button>
         </div>
       </section>
       <section class="view" id="view-params">
@@ -708,63 +664,6 @@ document.getElementById('d').value=iso(new Date());
 document.getElementById('start').value=settings.defStart;
 updateDayBadge();setPauseButtons(settings.defPauseMin);computeEnd();
 setInterval(tick,1000);tick();render();
-
-// ===== Vote en direct (relais temps réel : ntfy.sh, sans compte) =====
-const VTOPIC='https://ntfy.sh/badgheure-vote-k7q2m9x4w8d1p5z3';
-let vEvents=[], vResetAt=0, vPlayers={n:0,t:-1}, vSeen=new Set(), vSrc=null, vOrder=0;
-const vMe=(()=>{let v=localStorage.getItem('badgheure_voter');if(!v){const a=new Uint8Array(12);crypto.getRandomValues(a);v=Array.from(a,b=>(b%36).toString(36)).join('');localStorage.setItem('badgheure_voter',v)}return v})();
-function setLive(cls,txt){const el=document.getElementById('voteLive');el.className='vote-live '+cls;el.querySelector('span').textContent=txt}
-function vPublish(obj){return fetch(VTOPIC,{method:'POST',body:JSON.stringify(obj)}).then(r=>{if(!r.ok)throw 0})}
-// bulletins valides : depuis la dernière réinitialisation, seulement les N premiers votants (N = nombre de joueurs)
-function vTally(){const ev=vEvents.filter(e=>e.t>=vResetAt).sort((x,y)=>x.t-y.t||x.o-y.o);const max=vPlayers.n,ballots=new Map();
-  ev.forEach(e=>{if(ballots.has(e.u)||!max||ballots.size<max)ballots.set(e.u,e.v)});return ballots}
-function renderVote(){const ballots=vTally(),max=vPlayers.n;let oui=0,non=0;ballots.forEach(v=>v==='oui'?oui++:non++);
-  const tot=oui+non,po=tot?Math.round(oui/tot*100):0,pn=tot?100-po:0,full=max>0&&tot>=max;
-  document.getElementById('vOuiTxt').textContent=oui+' · '+po+' %';document.getElementById('vNonTxt').textContent=non+' · '+pn+' %';
-  document.getElementById('vOuiBar').style.width=po+'%';document.getElementById('vNonBar').style.width=pn+'%';
-  document.getElementById('vTotal').textContent=(max?tot+' / '+max+' joueurs ont voté':tot+(tot>1?' votes':' vote'))+(full?' — résultat : '+(oui>non?'OUI ✅':non>oui?'NON ❌':'égalité'):'');
-  const pl=document.getElementById('votePlayers');if(document.activeElement!==pl)pl.value=max||'';
-  const mine=ballots.get(vMe),blocked=full&&!mine;
-  document.querySelectorAll('.vote-btn').forEach(b=>{b.classList.toggle('on',!!mine&&mine===b.dataset.v);b.disabled=blocked});
-  document.getElementById('voteMine').textContent=mine?'Ton vote : '+mine.toUpperCase()+' (anonyme). Tu peux changer d’avis.':blocked?'Tout le monde a déjà voté ('+max+' joueurs).':'Tu n’as pas encore voté.'}
-// --- Admin : seuls les messages signés avec la clé admin (débloquée par mot de passe) sont acceptés
-const VADMIN={"pub": "BMragD96AUSFozDC1lvCc4NOii6S7sUlmi2j4JfSGvWxyN7KZDLT8lIQW0GVxmGXN3kjOI+GUkP8UpjLfLZRW4Q=", "salt": "YRCwiWqxX2biEY1F/CEZKg==", "iv": "r4Bvt6uCLQcO+0XD", "ct": "+Z2X+kawgw5VcNxw809Xlfi4WCDJ96eiSRc4Ah9D/+LJmoykSimKdyv4ZVQSSFSPB8e8JQVcCNFHG1gqyOxzrjBmEUeUPX1m/3T7GpX6rCi7a+GwpDAEWfa4CYlKLF4jGTMsFLKP2t2SxrFIP/zldUhLdtbtG9nr2WDUWpsndQZdW3bLPgRqsfmxYyRO2l+K5GhcavZmSmx7BA=="};
-const b64=x=>Uint8Array.from(atob(x),c=>c.charCodeAt(0)), tob64=buf=>btoa(String.fromCharCode(...new Uint8Array(buf)));
-const vPubKey=crypto.subtle.importKey('raw',b64(VADMIN.pub),{name:'ECDSA',namedCurve:'P-256'},false,['verify']);
-let vAdminKey=null, vNonces=new Set();
-const vCanon=d=>JSON.stringify({k:d.k,n:d.n??null,nonce:d.nonce});
-async function vVerify(d){try{if(typeof d.nonce!=='string'||typeof d.sig!=='string'||vNonces.has(d.nonce))return false;
-  const ok=await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},await vPubKey,b64(d.sig),new TextEncoder().encode(vCanon(d)));if(ok)vNonces.add(d.nonce);return ok}catch{return false}}
-async function vAdminPublish(d){d.nonce=Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');
-  d.sig=tob64(await crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},vAdminKey,new TextEncoder().encode(vCanon(d))));return vPublish(d)}
-async function vUnlock(pw){const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
-  const k=await crypto.subtle.deriveKey({name:'PBKDF2',salt:b64(VADMIN.salt),iterations:300000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
-  return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:b64(VADMIN.iv)},k,b64(VADMIN.ct)))}
-async function vSetAdmin(pkcs8){vAdminKey=pkcs8?await crypto.subtle.importKey('pkcs8',pkcs8,{name:'ECDSA',namedCurve:'P-256'},false,['sign']):null;
-  document.getElementById('adminPanel').style.display=vAdminKey?'':'none';document.getElementById('btnAdmin').textContent=vAdminKey?'🔓 Admin':'🔒 Admin';renderVote()}
-document.getElementById('btnAdmin').onclick=async()=>{if(vAdminKey){document.getElementById('adminPanel').scrollIntoView({behavior:'smooth'});return}
-  const pw=prompt('Mot de passe admin');if(!pw)return;
-  try{const pk=await vUnlock(pw.trim());localStorage.setItem('badgheure_admin',tob64(pk));await vSetAdmin(pk);toast('Mode admin activé')}catch{toast('Mot de passe incorrect')}};
-document.getElementById('btnAdminOut').onclick=()=>{localStorage.removeItem('badgheure_admin');vSetAdmin(null);toast('Mode admin désactivé')};
-{const s=localStorage.getItem('badgheure_admin');if(s)vSetAdmin(b64(s)).catch(()=>localStorage.removeItem('badgheure_admin'))}
-let vQueue=Promise.resolve();
-function vHandle(m,d){
-    if(d.k==='reset')vResetAt=Math.max(vResetAt,m.time);
-    if(d.k==='players'&&Number.isInteger(d.n)&&d.n>=0&&m.time>=vPlayers.t)vPlayers={n:d.n,t:m.time};
-    if(d.k==='v'&&(d.v==='oui'||d.v==='non')&&typeof d.u==='string')vEvents.push({u:d.u,v:d.v,t:m.time,o:vOrder++});
-    renderVote()}
-function vConnect(){vSrc=new EventSource(VTOPIC+'/sse?since=all');
-  vSrc.onopen=()=>setLive('on','En direct');
-  vSrc.onerror=()=>setLive('','Reconnexion…');
-  vSrc.onmessage=ev=>{let m,d;try{m=JSON.parse(ev.data);d=JSON.parse(m.message)}catch{return}
-    if(vSeen.has(m.id))return;vSeen.add(m.id);
-    if(d.k==='reset'||d.k==='players')vQueue=vQueue.then(()=>vVerify(d)).then(ok=>{if(ok)vHandle(m,d)});
-    else vQueue=vQueue.then(()=>vHandle(m,d))}}
-document.getElementById('votePlayers').onchange=async e=>{if(!vAdminKey)return;const n=Math.max(0,Math.min(99,Math.round(+e.target.value||0)));
-  try{await vAdminPublish({k:'players',n});toast(n?n+' joueurs : '+n+' votes max':'Sans limite de joueurs')}catch{toast('Échec, réessaie')}};
-document.getElementById('btnVoteReset').onclick=async()=>{if(!vAdminKey)return;if(!confirm('Réinitialiser le vote pour tout le monde ?'))return;try{await vAdminPublish({k:'reset'});toast('Vote réinitialisé')}catch{toast('Échec, réessaie')}};
-document.querySelectorAll('.vote-btn').forEach(b=>b.onclick=async()=>{if(b.disabled)return;try{await vPublish({k:'v',v:b.dataset.v,u:vMe});toast('Vote enregistré')}catch{toast('Échec de l\u2019envoi, réessaie')}});
-renderVote();vConnect();
 </script>
 </body>
 </html>

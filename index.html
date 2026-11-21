@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#eef2f7">
 <title>Vote</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%97%B3%EF%B8%8F%3C/text%3E%3C/svg%3E">
 <style>
   :root{
-    --bg:#eef2f7;--panel:#ffffff;--nav:#0d1b2a;--nav-hover:#1a2b3d;--nav-active:#0891b2;
-    --nav-text:#8fa3b8;--nav-title:#5a7085;--ink:#0e1a2b;--muted:#5d6b7d;--line:#dbe2ea;
+    --bg:#eef2f7;--panel:#ffffff;--nav:#0d1b2a;--ink:#0e1a2b;--muted:#5d6b7d;--line:#dbe2ea;
     --brand:#0e7490;--brand-soft:#dcf2f7;--green:#16a34a;--green-soft:#e9f7ef;
-    --amber:#d97706;--amber-soft:#fdf3e7;--red:#dc2626;--red-soft:#fdecec;--cyan:#06b6d4;
+    --amber:#d97706;--red:#dc2626;--red-soft:#fdecec;
     --r:16px;--shadow:0 1px 2px rgba(14,26,43,.05),0 6px 20px rgba(14,26,43,.08);
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -21,12 +21,10 @@
   .page-head h1{font-size:1.5rem;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
   .page-head h1 svg{width:24px;height:24px;color:var(--brand)}
   .page-head p{color:var(--muted);font-size:.9rem;margin-top:4px}
-  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:22px;margin-bottom:18px}
   .card-h{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
   .card-h .d{width:7px;height:7px;border-radius:50%;background:var(--brand)}
   .btn{border:none;border-radius:11px;padding:12px 22px;min-height:44px;font-size:.92rem;font-weight:600;cursor:pointer;font-family:inherit;transition:.1s;display:inline-flex;align-items:center;justify-content:center;gap:7px;touch-action:manipulation;-webkit-user-select:none;user-select:none}
-  .btn:active{transform:scale(.97)}
   .btn:active{transform:translateY(1px)}.btn svg{width:17px;height:17px}
   .btn-full{width:100%;justify-content:center;margin-top:6px}
   .chip{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
@@ -67,52 +65,55 @@
 </head>
 <body>
 <main class="wrap">
-        <div class="page-head"><h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Vote</h1><p>Vote anonyme oui ou non, résultat en direct.</p></div>
-        <div class="card">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-            <span class="vote-live" id="voteLive"><i></i><span>Connexion…</span></span>
-            <button class="chip" id="btnAdmin">🔒 Admin</button>
-          </div>
-          <div class="vote-last" id="vLast" style="display:none"></div>
-          <div class="vote-btns">
-            <button class="vote-btn oui" data-v="oui">👍 Oui</button>
-            <button class="vote-btn non" data-v="non">👎 Non</button>
-          </div>
-          <div class="hint" id="voteMine" style="margin:-6px 0 14px">Tu n'as pas encore voté.</div>
-          <div class="vote-res">
-            <div class="vote-row"><div class="lr"><span style="color:var(--green)">Oui</span><span id="vOuiTxt">0</span></div><div class="vote-bar"><div id="vOuiBar" style="background:var(--green)"></div></div></div>
-            <div class="vote-row"><div class="lr"><span style="color:var(--red)">Non</span><span id="vNonTxt">0</span></div><div class="vote-bar"><div id="vNonBar" style="background:var(--red)"></div></div></div>
-            <div class="vote-total" id="vTotal">0 vote</div>
-          </div>
-        </div>
-        <div class="card" id="adminPanel" style="display:none">
-          <div class="card-h"><span class="d"></span>Admin du vote</div>
-          <div class="field"><label for="votePlayers">Nombre de joueurs (= votes max)</label><input type="number" id="votePlayers" min="0" max="99" step="1" inputmode="numeric" placeholder="illimité"></div>
-          <button class="btn btn-full" id="btnVoteReset" style="background:var(--red-soft);color:var(--red)">Réinitialiser le vote</button>
-          <button class="chip" id="btnAdminOut" style="margin-top:12px">Quitter le mode admin</button>
-        </div>
-      </main>
+  <div class="page-head"><h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Vote</h1><p>Vote anonyme oui ou non, résultat en direct.</p></div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <span class="vote-live" id="voteLive"><i></i><span>Connexion…</span></span>
+      <button class="chip" id="btnAdmin">🔒 Admin</button>
+    </div>
+    <div class="vote-last" id="vLast" style="display:none"></div>
+    <div class="vote-btns">
+      <button class="vote-btn oui" data-v="oui">👍 Oui</button>
+      <button class="vote-btn non" data-v="non">👎 Non</button>
+    </div>
+    <div class="hint" id="voteMine" style="margin:-6px 0 14px">Tu n'as pas encore voté.</div>
+    <div class="vote-res">
+      <div class="vote-row"><div class="lr"><span style="color:var(--green)">Oui</span><span id="vOuiTxt">0</span></div><div class="vote-bar"><div id="vOuiBar" style="background:var(--green)"></div></div></div>
+      <div class="vote-row"><div class="lr"><span style="color:var(--red)">Non</span><span id="vNonTxt">0</span></div><div class="vote-bar"><div id="vNonBar" style="background:var(--red)"></div></div></div>
+      <div class="vote-total" id="vTotal">0 vote</div>
+    </div>
+  </div>
+  <div class="card" id="adminPanel" style="display:none">
+    <div class="card-h"><span class="d"></span>Admin du vote</div>
+    <div class="field"><label for="votePlayers">Nombre de joueurs (= votes max)</label><input type="number" id="votePlayers" min="0" max="99" step="1" inputmode="numeric" placeholder="illimité"></div>
+    <button class="btn btn-full" id="btnVoteReset" style="background:var(--red-soft);color:var(--red)">Réinitialiser le vote</button>
+    <button class="chip" id="btnAdminOut" style="margin-top:12px">Quitter le mode admin</button>
+  </div>
+</main>
 <div class="toast" id="toast"></div>
 <script>
-function load(k,def){try{return JSON.parse(localStorage.getItem(k))??def}catch{return def}}
-function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1900)}
 // ===== Vote en direct (relais temps réel : ntfy.sh, sans compte) =====
 const VTOPIC='https://ntfy.sh/badgheure-vote-k7q2m9x4w8d1p5z3';
-let vEvents=[], vResetAt=0, vPlayers={n:0,t:-1}, vSeen=new Set(), vSrc=null, vOrder=0;
+let vTimeline=[], vSeen=new Set(), vSrc=null;
 const vMe=(()=>{let v=localStorage.getItem('badgheure_voter');if(!v){const a=new Uint8Array(12);crypto.getRandomValues(a);v=Array.from(a,b=>(b%36).toString(36)).join('');localStorage.setItem('badgheure_voter',v)}return v})();
 function setLive(cls,txt){const el=document.getElementById('voteLive');el.className='vote-live '+cls;el.querySelector('span').textContent=txt}
 function vPublish(obj){return fetch(VTOPIC,{method:'POST',body:JSON.stringify(obj)}).then(r=>{if(!r.ok)throw 0})}
-// Manches : depuis la dernière réinitialisation admin, dès que N joueurs ont voté (N = nombre de joueurs),
-// la manche est terminée, son résultat est affiché et une nouvelle manche démarre automatiquement.
-// Dans une manche, seul le 1er vote de chaque personne compte.
+// Les messages sont traités dans l'ordre du serveur (le même pour tout le monde).
+// - réinitialisation admin : tout repart à zéro
+// - nombre de joueurs (admin) : fixe combien de votes on attend
+// - dès que ce nombre est atteint, le vote est terminé, son résultat s'affiche et un nouveau vote s'ouvre tout seul
+// - dans un vote, seul le 1er vote de chaque personne compte
 let vLastRoundKey=null;
-function vTally(){const ev=vEvents.filter(e=>e.t>=vResetAt).sort((x,y)=>x.t-y.t||x.o-y.o);const max=vPlayers.n;let ballots=new Map(),last=null,rounds=0;
-  ev.forEach(e=>{if(ballots.has(e.u))return;ballots.set(e.u,e.v);
-    if(max&&ballots.size>=max){let o=0,n=0;ballots.forEach(v=>v==='oui'?o++:n++);last={oui:o,non:n,t:e.t};rounds++;ballots=new Map()}});
-  return {ballots,last,rounds}}
+function vTally(){let max=0,ballots=new Map(),last=null,rounds=0;
+  const close=()=>{let o=0,n=0;ballots.forEach(v=>v==='oui'?o++:n++);last={oui:o,non:n};rounds++;ballots=new Map()};
+  vTimeline.forEach(e=>{
+    if(e.k==='reset'){ballots=new Map();last=null;rounds=0}
+    else if(e.k==='players'){max=e.n;if(max&&ballots.size>=max)close()}
+    else if(!ballots.has(e.u)){ballots.set(e.u,e.v);if(max&&ballots.size>=max)close()}});
+  return {ballots,last,rounds,max}}
 function vVerdict(o,n){return o>n?'OUI ✅':n>o?'NON ❌':'égalité'}
-function renderVote(){const {ballots,last,rounds}=vTally(),max=vPlayers.n;let oui=0,non=0;ballots.forEach(v=>v==='oui'?oui++:non++);
+function renderVote(){const {ballots,last,rounds,max}=vTally();let oui=0,non=0;ballots.forEach(v=>v==='oui'?oui++:non++);
   const tot=oui+non,po=tot?Math.round(oui/tot*100):0,pn=tot?100-po:0;
   document.getElementById('vOuiTxt').textContent=oui+' · '+po+' %';document.getElementById('vNonTxt').textContent=non+' · '+pn+' %';
   document.getElementById('vOuiBar').style.width=po+'%';document.getElementById('vNonBar').style.width=pn+'%';
@@ -123,7 +124,7 @@ function renderVote(){const {ballots,last,rounds}=vTally(),max=vPlayers.n;let ou
     const v=document.createElement('div');v.className='vl-v';v.textContent=vVerdict(last.oui,last.non);
     const d=document.createElement('div');d.className='vl-d';d.textContent=last.oui+' oui · '+last.non+' non — nouveau vote ouvert';lr.append(t,v,d)}
   else lr.style.display='none';
-  const key=last?rounds+':'+last.t:null;if(vLive&&key&&vLastRoundKey!==null&&key!==vLastRoundKey)toast('Vote terminé : '+vVerdict(last.oui,last.non));vLastRoundKey=key||'';
+  const key=last?String(rounds):null;if(vLive&&key&&vLastRoundKey!==null&&key!==vLastRoundKey)toast('Vote terminé : '+vVerdict(last.oui,last.non));vLastRoundKey=key||'';
   const pl=document.getElementById('votePlayers');if(document.activeElement!==pl)pl.value=max||'';
   const mine=ballots.get(vMe),blocked=!!mine;
   document.querySelectorAll('.vote-btn').forEach(b=>{b.classList.toggle('on',!!mine&&mine===b.dataset.v);b.disabled=blocked});
@@ -150,22 +151,23 @@ document.getElementById('btnAdmin').onclick=async()=>{if(vAdminKey){document.get
 document.getElementById('btnAdminOut').onclick=()=>{localStorage.removeItem('badgheure_admin');vSetAdmin(null);toast('Mode admin désactivé')};
 {const s=localStorage.getItem('badgheure_admin');if(s)vSetAdmin(b64(s)).catch(()=>localStorage.removeItem('badgheure_admin'))}
 let vQueue=Promise.resolve();
-function vHandle(m,d){
-    if(d.k==='reset')vResetAt=Math.max(vResetAt,m.time);
-    if(d.k==='players'&&Number.isInteger(d.n)&&d.n>=0&&m.time>=vPlayers.t)vPlayers={n:d.n,t:m.time};
-    if(d.k==='v'&&(d.v==='oui'||d.v==='non')&&typeof d.u==='string')vEvents.push({u:d.u,v:d.v,t:m.time,o:vOrder++});
-    renderVote()}
+function vHandle(d){
+  if(d.k==='reset')vTimeline.push({k:'reset'});
+  else if(d.k==='players'&&Number.isInteger(d.n)&&d.n>=0&&d.n<=99)vTimeline.push({k:'players',n:d.n});
+  else if(d.k==='v'&&(d.v==='oui'||d.v==='non')&&typeof d.u==='string'&&d.u.length<=40)vTimeline.push({k:'v',u:d.u,v:d.v});
+  else return;
+  renderVote()}
 function vConnect(){vSrc=new EventSource(VTOPIC+'/sse?since=all');
   vSrc.onopen=()=>setLive('on','En direct');
   vSrc.onerror=()=>setLive('','Reconnexion…');
   vSrc.onmessage=ev=>{let m,d;try{m=JSON.parse(ev.data);d=JSON.parse(m.message)}catch{return}
     if(vSeen.has(m.id))return;vSeen.add(m.id);
-    if(d.k==='reset'||d.k==='players')vQueue=vQueue.then(()=>vVerify(d)).then(ok=>{if(ok)vHandle(m,d)});
-    else vQueue=vQueue.then(()=>vHandle(m,d))}}
+    if(d.k==='reset'||d.k==='players')vQueue=vQueue.then(()=>vVerify(d)).then(ok=>{if(ok)vHandle(d)});
+    else vQueue=vQueue.then(()=>vHandle(d))}}
 document.getElementById('votePlayers').onchange=async e=>{if(!vAdminKey)return;const n=Math.max(0,Math.min(99,Math.round(+e.target.value||0)));
   try{await vAdminPublish({k:'players',n});toast(n?n+' joueurs : '+n+' votes max':'Sans limite de joueurs')}catch{toast('Échec, réessaie')}};
 document.getElementById('btnVoteReset').onclick=async()=>{if(!vAdminKey)return;if(!confirm('Réinitialiser le vote pour tout le monde ?'))return;try{await vAdminPublish({k:'reset'});toast('Vote réinitialisé')}catch{toast('Échec, réessaie')}};
-document.querySelectorAll('.vote-btn').forEach(b=>b.onclick=async()=>{if(b.disabled)return;document.querySelectorAll('.vote-btn').forEach(x=>x.disabled=true);try{await vPublish({k:'v',v:b.dataset.v,u:vMe});toast('Vote enregistré')}catch{toast('Échec de l\u2019envoi, réessaie');renderVote()}});
+document.querySelectorAll('.vote-btn').forEach(b=>b.onclick=async()=>{if(b.disabled)return;document.querySelectorAll('.vote-btn').forEach(x=>x.disabled=true);try{await vPublish({k:'v',v:b.dataset.v,u:vMe});toast('Vote enregistré');setTimeout(renderVote,8000)}catch{toast('Échec de l\u2019envoi, réessaie');renderVote()}});
 renderVote();vConnect();
 </script>
 </body>
