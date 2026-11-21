@@ -348,7 +348,10 @@
       <section class="view" id="view-vote">
         <div class="page-head"><h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Vote</h1><p>Vote anonyme oui ou non, résultat en direct.</p></div>
         <div class="card">
-          <span class="vote-live" id="voteLive"><i></i><span>Connexion…</span></span>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <span class="vote-live" id="voteLive"><i></i><span>Connexion…</span></span>
+            <div style="display:flex;align-items:center;gap:8px"><label for="votePlayers" style="margin:0">Joueurs</label><input type="number" id="votePlayers" min="1" max="99" step="1" inputmode="numeric" placeholder="—" style="width:76px;text-align:center"></div>
+          </div>
           <div class="vote-btns">
             <button class="vote-btn oui" data-v="oui">👍 Oui</button>
             <button class="vote-btn non" data-v="non">👎 Non</button>
@@ -703,28 +706,34 @@ setInterval(tick,1000);tick();render();
 
 // ===== Vote en direct (relais temps réel : ntfy.sh, sans compte) =====
 const VTOPIC='https://ntfy.sh/badgheure-vote-k7q2m9x4w8d1p5z3';
-let vBallots={}, vResetAt=0, vSeen=new Set(), vSrc=null;
+let vEvents=[], vResetAt=0, vPlayers={n:0,t:-1}, vSeen=new Set(), vSrc=null, vOrder=0;
 const vMe=(()=>{let v=localStorage.getItem('badgheure_voter');if(!v){const a=new Uint8Array(12);crypto.getRandomValues(a);v=Array.from(a,b=>(b%36).toString(36)).join('');localStorage.setItem('badgheure_voter',v)}return v})();
 function setLive(cls,txt){const el=document.getElementById('voteLive');el.className='vote-live '+cls;el.querySelector('span').textContent=txt}
 function vPublish(obj){return fetch(VTOPIC,{method:'POST',body:JSON.stringify(obj)}).then(r=>{if(!r.ok)throw 0})}
-function renderVote(){let oui=0,non=0;
-  Object.values(vBallots).forEach(b=>{if(b.t<vResetAt)return;b.v==='oui'?oui++:non++});
-  const tot=oui+non,po=tot?Math.round(oui/tot*100):0,pn=tot?100-po:0;
+// bulletins valides : depuis la dernière réinitialisation, seulement les N premiers votants (N = nombre de joueurs)
+function vTally(){const ev=vEvents.filter(e=>e.t>=vResetAt).sort((x,y)=>x.t-y.t||x.o-y.o);const max=vPlayers.n,ballots=new Map();
+  ev.forEach(e=>{if(ballots.has(e.u)||!max||ballots.size<max)ballots.set(e.u,e.v)});return ballots}
+function renderVote(){const ballots=vTally(),max=vPlayers.n;let oui=0,non=0;ballots.forEach(v=>v==='oui'?oui++:non++);
+  const tot=oui+non,po=tot?Math.round(oui/tot*100):0,pn=tot?100-po:0,full=max>0&&tot>=max;
   document.getElementById('vOuiTxt').textContent=oui+' · '+po+' %';document.getElementById('vNonTxt').textContent=non+' · '+pn+' %';
   document.getElementById('vOuiBar').style.width=po+'%';document.getElementById('vNonBar').style.width=pn+'%';
-  document.getElementById('vTotal').textContent=tot+(tot>1?' votes':' vote');
-  const m=vBallots[vMe],mine=m&&m.t>=vResetAt?m:null;
-  document.querySelectorAll('.vote-btn').forEach(b=>b.classList.toggle('on',!!mine&&mine.v===b.dataset.v));
-  document.getElementById('voteMine').textContent=mine?'Ton vote : '+mine.v.toUpperCase()+' (anonyme). Tu peux changer d’avis.':'Tu n’as pas encore voté.'}
+  document.getElementById('vTotal').textContent=(max?tot+' / '+max+' joueurs ont voté':tot+(tot>1?' votes':' vote'))+(full?' — résultat : '+(oui>non?'OUI ✅':non>oui?'NON ❌':'égalité'):'');
+  const pl=document.getElementById('votePlayers');if(document.activeElement!==pl)pl.value=max||'';
+  const mine=ballots.get(vMe),blocked=full&&!mine;
+  document.querySelectorAll('.vote-btn').forEach(b=>{b.classList.toggle('on',!!mine&&mine===b.dataset.v);b.disabled=blocked});
+  document.getElementById('voteMine').textContent=mine?'Ton vote : '+mine.toUpperCase()+' (anonyme). Tu peux changer d’avis.':blocked?'Tout le monde a déjà voté ('+max+' joueurs).':'Tu n’as pas encore voté.'}
 function vConnect(){vSrc=new EventSource(VTOPIC+'/sse?since=all');
   vSrc.onopen=()=>setLive('on','En direct');
   vSrc.onerror=()=>setLive('','Reconnexion…');
   vSrc.onmessage=ev=>{let m,d;try{m=JSON.parse(ev.data);d=JSON.parse(m.message)}catch{return}
     if(vSeen.has(m.id))return;vSeen.add(m.id);
     if(d.k==='reset')vResetAt=Math.max(vResetAt,m.time);
-    if(d.k==='v'&&(d.v==='oui'||d.v==='non')&&typeof d.u==='string'){const b=vBallots[d.u];if(!b||m.time>=b.t)vBallots[d.u]={v:d.v,t:m.time}}
+    if(d.k==='players'&&Number.isInteger(d.n)&&d.n>=0&&m.time>=vPlayers.t)vPlayers={n:d.n,t:m.time};
+    if(d.k==='v'&&(d.v==='oui'||d.v==='non')&&typeof d.u==='string')vEvents.push({u:d.u,v:d.v,t:m.time,o:vOrder++});
     renderVote()}}
-document.querySelectorAll('.vote-btn').forEach(b=>b.onclick=async()=>{try{await vPublish({k:'v',v:b.dataset.v,u:vMe});toast('Vote enregistré')}catch{toast('Échec de l’envoi, réessaie')}});
+document.getElementById('votePlayers').onchange=async e=>{const n=Math.max(0,Math.min(99,Math.round(+e.target.value||0)));
+  try{await vPublish({k:'players',n});toast(n?n+' joueurs : '+n+' votes max':'Nombre de joueurs retiré')}catch{toast('Échec, réessaie')}};
+document.querySelectorAll('.vote-btn').forEach(b=>b.onclick=async()=>{if(b.disabled)return;try{await vPublish({k:'v',v:b.dataset.v,u:vMe});toast('Vote enregistré')}catch{toast('Échec de l’envoi, réessaie')}});
 document.getElementById('btnVoteReset').onclick=async()=>{if(!confirm('Réinitialiser le vote pour tout le monde ?'))return;try{await vPublish({k:'reset'});toast('Vote réinitialisé')}catch{toast('Échec, réessaie')}};
 renderVote();vConnect();
 </script>
