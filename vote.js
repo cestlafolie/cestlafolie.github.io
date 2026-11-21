@@ -34,7 +34,7 @@ function tally() {
   }
   return { ballots, last, rounds, max };
 }
-const verdict = (o, n) => o > n ? 'OUI ✅' : n > o ? 'NON ❌' : 'Égalité 🤝';
+const verdict = (o, n) => o > n ? 'Oui' : n > o ? 'Non' : 'Égalité';
 
 // ---- affichage
 function setLive(on, txt) { const el = $('voteLive'); el.classList.toggle('on', on); el.lastElementChild.textContent = txt; }
@@ -48,33 +48,38 @@ function render() {
   if (pending && !ballots.has(me)) pending.v === 'oui' ? oui++ : non++;
   const tot = oui + non, po = tot ? Math.round(oui / tot * 100) : 0, pn = tot ? 100 - po : 0;
 
-  tweenText($('vOuiTxt'), po, p => oui + ' · ' + p + ' %');
-  tweenText($('vNonTxt'), pn, p => non + ' · ' + p + ' %');
+  tweenText($('vOuiN'), oui, x => x);
+  tweenText($('vNonN'), non, x => x);
+  tweenText($('vOuiP'), po, x => x + '%');
+  tweenText($('vNonP'), pn, x => x + '%');
   $('vOuiBar').style.transform = 'scaleX(' + po / 100 + ')';
   $('vNonBar').style.transform = 'scaleX(' + pn / 100 + ')';
-  $('vTotal').textContent = max ? tot + ' / ' + max + ' joueurs ont voté' : tot + (tot > 1 ? ' votes' : ' vote');
+  $('vTotal').textContent = max ? tot + '/' + max + ' ont voté' : tot + (tot > 1 ? ' votes' : ' vote');
+  $('vRound').textContent = 'Manche ' + (rounds + 1);
 
-  // pastilles de progression (une par joueur attendu)
+  // segments de progression (un par joueur attendu)
   const dots = $('vDots');
   if (max && max <= 30) {
     if (dots.children.length !== max) dots.innerHTML = '<i></i>'.repeat(max);
     [...dots.children].forEach((d, i) => d.classList.toggle('on', i < tot));
   } else dots.innerHTML = '';
 
-  // dernier résultat
+  // résultat de la manche précédente
   const wrap = $('vLastWrap'), box = $('vLast');
   if (last) {
     box.className = 'last ' + (last.oui > last.non ? 'oui' : last.non > last.oui ? 'non' : '');
     box.innerHTML = '';
-    const k = document.createElement('div'); k.className = 'k'; k.textContent = 'Résultat du dernier vote';
+    const l = document.createElement('div');
+    const k = document.createElement('div'); k.className = 'k'; k.textContent = 'Manche ' + rounds;
     const v = document.createElement('div'); v.className = 'v'; v.textContent = verdict(last.oui, last.non);
-    const d = document.createElement('div'); d.className = 'd'; d.textContent = last.oui + ' oui · ' + last.non + ' non — nouveau vote ouvert';
-    box.append(k, v, d);
+    l.append(k, v);
+    const d = document.createElement('div'); d.className = 'd'; d.textContent = last.oui + ' – ' + last.non;
+    box.append(l, d);
   }
   wrap.classList.toggle('open', !!last);
   if (live && last && lastRounds !== null && rounds !== lastRounds) {
     box.classList.remove('pop'); void box.offsetWidth; box.classList.add('pop');
-    toast('Vote terminé : ' + verdict(last.oui, last.non)); buzz([20, 60, 20]);
+    toast('Manche ' + rounds + ' : ' + verdict(last.oui, last.non).toLowerCase() + ', ' + last.oui + ' – ' + last.non); buzz([20, 60, 20]);
   }
   lastRounds = last ? rounds : 0;
 
@@ -84,7 +89,7 @@ function render() {
     b.classList.toggle('pending', !!pending && pending.v === b.dataset.v);
     b.disabled = !!mine;
   });
-  $('voteMine').textContent = mine ? 'Ton vote : ' + mine.toUpperCase() + ' (anonyme). Définitif jusqu’à la fin de ce vote.' : 'Tu n’as pas encore voté.';
+  $('voteMine').textContent = mine ? 'C’est noté. Personne ne sait ce que tu as voté.' : 'Ton vote reste anonyme.';
 
   const pl = $('votePlayers'); if (document.activeElement !== pl) pl.value = max || '';
 }
@@ -114,7 +119,9 @@ function ingest(m, fromCache) {
   else queue = queue.then(() => handle(d));
 }
 let saveT = null;
-function saveCache() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(CACHE, JSON.stringify(cache.slice(-500))); } catch {} }, 300); }
+function flushCache() { clearTimeout(saveT); try { localStorage.setItem(CACHE, JSON.stringify(cache.slice(-500))); } catch {} }
+function saveCache() { clearTimeout(saveT); saveT = setTimeout(flushCache, 300); }
+addEventListener('pagehide', flushCache);
 function restoreCache() {   // affiche tout de suite le dernier état connu, avant même la connexion
   try {
     const now = Date.now() / 1000;
@@ -132,8 +139,8 @@ const links = Array.from({ length: LINKS }, () => ({ es: null, last: 0, fails: 0
 const isOpen = l => l.es && l.es.readyState === 1;
 function updateStatus() {
   const n = links.filter(isOpen).length;
-  if (n) { setLive(true, 'En direct'); if (!live) setTimeout(() => live = true, 1200); }
-  else setLive(false, navigator.onLine === false ? 'Hors ligne' : 'Reconnexion…');
+  if (n) { setLive(true, 'en direct'); if (!live) setTimeout(() => live = true, 1200); }
+  else setLive(false, navigator.onLine === false ? 'hors ligne' : 'reconnexion');
 }
 function open(l) {
   if (l.es) l.es.close();
@@ -204,24 +211,24 @@ async function unlock(pw) {
 async function setAdmin(pkcs8) {
   adminKey = pkcs8 ? await crypto.subtle.importKey('pkcs8', pkcs8, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']) : null;
   $('adminWrap').classList.toggle('open', !!adminKey);
-  $('btnAdmin').textContent = adminKey ? '🔓 Admin activé' : '🔒 Admin';
+  $('btnAdmin').textContent = adminKey ? 'admin · actif' : 'admin';
   render();
 }
 
 $('btnAdmin').onclick = async () => {
   if (adminKey) { $('adminWrap').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
   const pw = prompt('Mot de passe admin'); if (!pw) return;
-  const btn = $('btnAdmin'); btn.textContent = '⏳ Vérification…'; btn.disabled = true;
-  try { const pk = await unlock(pw.trim()); localStorage.setItem('badgheure_admin', tob64(pk)); await setAdmin(pk); toast('Mode admin activé'); }
-  catch { btn.textContent = '🔒 Admin'; toast('Mot de passe incorrect'); }
+  const btn = $('btnAdmin'); btn.textContent = 'vérification…'; btn.disabled = true;
+  try { const pk = await unlock(pw.trim()); localStorage.setItem('badgheure_admin', tob64(pk)); await setAdmin(pk); toast('Mode admin'); }
+  catch { btn.textContent = 'admin'; toast('Mauvais mot de passe'); }
   btn.disabled = false;
 };
-$('btnAdminOut').onclick = () => { localStorage.removeItem('badgheure_admin'); setAdmin(null); toast('Mode admin désactivé'); };
+$('btnAdminOut').onclick = () => { localStorage.removeItem('badgheure_admin'); setAdmin(null); toast('Admin fermé'); };
 
 async function sendPlayers(n) {
   n = Math.max(0, Math.min(99, Math.round(n || 0)));
   $('votePlayers').value = n || '';
-  try { await adminPublish({ k: 'players', n }); toast(n ? n + ' joueurs attendus' : 'Sans limite de joueurs'); } catch { toast('Échec, réessaie'); }
+  try { await adminPublish({ k: 'players', n }); toast(n ? n + ' joueurs' : 'Pas de limite'); } catch { toast('Raté, réessaie'); }
 }
 let plTimer = null;
 const stepPlayers = delta => { const el = $('votePlayers'); el.value = Math.max(0, Math.min(99, (+el.value || 0) + delta)) || ''; clearTimeout(plTimer); plTimer = setTimeout(() => sendPlayers(+el.value), 600); };
@@ -229,8 +236,8 @@ $('plMinus').onclick = () => adminKey && stepPlayers(-1);
 $('plPlus').onclick = () => adminKey && stepPlayers(1);
 $('votePlayers').onchange = e => { if (adminKey) { clearTimeout(plTimer); sendPlayers(+e.target.value); } };
 $('btnVoteReset').onclick = async () => {
-  if (!adminKey || !confirm('Réinitialiser le vote pour tout le monde ?')) return;
-  try { await adminPublish({ k: 'reset' }); toast('Vote réinitialisé'); buzz(); } catch { toast('Échec, réessaie'); }
+  if (!adminKey || !confirm('Tout remettre à zéro pour tout le monde ?')) return;
+  try { await adminPublish({ k: 'reset' }); toast('Remis à zéro'); buzz(); } catch { toast('Raté, réessaie'); }
 };
 
 // ---- démarrage

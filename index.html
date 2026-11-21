@@ -3,18 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#eef2f7">
-<title>Jeux</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%B2%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#121110">
+<meta name="color-scheme" content="dark">
+<title>jeux.</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23121110'/%3E%3Ccircle cx='24' cy='32' r='9' fill='%23d4f54a'/%3E%3Ccircle cx='42' cy='32' r='9' fill='%23ff5b3a'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://ntfy.sh" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <header class="top">
-  <div class="top-in">
-    <span class="logo">🎲</span>
-    <div><h1>Jeux</h1><p>Entre nous, en direct.</p></div>
-  </div>
+  <a class="mark" href="./">jeux<span>.</span></a>
+  <span class="live" id="voteLive"><i></i><span>connexion</span></span>
 </header>
 
 <!--
@@ -26,41 +28,40 @@
 
   <!-- ===== Module : vote oui / non ===== -->
   <section class="module" id="mod-vote">
-    <div class="card">
-      <div class="card-top">
-        <h2>🗳️ Vote</h2>
-        <span class="live" id="voteLive"><i></i><span>Connexion…</span></span>
+    <div class="tag"><span>Vote</span><span id="vRound">Manche 1</span></div>
+    <h2 class="q">On joue&nbsp;?</h2>
+
+    <div class="vote-btns">
+      <button class="vote-btn oui" data-v="oui"><b>Oui</b><small>je suis chaud</small></button>
+      <button class="vote-btn non" data-v="non"><b>Non</b><small>pas pour moi</small></button>
+    </div>
+    <p class="mine" id="voteMine">Ton vote reste anonyme.</p>
+
+    <div class="board">
+      <div class="score">
+        <div class="side oui"><span class="n" id="vOuiN">0</span><span class="p" id="vOuiP">0%</span></div>
+        <span class="vs">—</span>
+        <div class="side non"><span class="p" id="vNonP">0%</span><span class="n" id="vNonN">0</span></div>
       </div>
-      <p class="sub">Anonyme · un seul vote par personne · résultat en direct</p>
-
-      <div class="reveal" id="vLastWrap"><div><div class="last" id="vLast"></div></div></div>
-
-      <div class="vote-btns">
-        <button class="vote-btn oui" data-v="oui"><span>👍</span>Oui</button>
-        <button class="vote-btn non" data-v="non"><span>👎</span>Non</button>
-      </div>
-      <p class="hint" id="voteMine">Tu n'as pas encore voté.</p>
-
-      <div class="res">
-        <div class="res-row"><div class="lr"><b class="c-oui">Oui</b><span id="vOuiTxt">0 · 0 %</span></div><div class="bar"><div id="vOuiBar" class="bg-oui"></div></div></div>
-        <div class="res-row"><div class="lr"><b class="c-non">Non</b><span id="vNonTxt">0 · 0 %</span></div><div class="bar"><div id="vNonBar" class="bg-non"></div></div></div>
-        <div class="progress"><span id="vTotal">0 vote</span><span class="dots" id="vDots"></span></div>
-      </div>
-
-      <button class="link-btn" id="btnAdmin">🔒 Admin</button>
+      <div class="split"><div id="vOuiBar"></div><div id="vNonBar"></div></div>
+      <div class="progress"><span id="vTotal">0 vote</span><span class="segs" id="vDots"></span></div>
     </div>
 
+    <div class="reveal" id="vLastWrap"><div><div class="last" id="vLast"></div></div></div>
+
+    <button class="admin-link" id="btnAdmin">admin</button>
+
     <div class="reveal" id="adminWrap"><div>
-      <div class="card admin">
-        <div class="card-top"><h2>⚙️ Admin du vote</h2><button class="chip" id="btnAdminOut">Quitter</button></div>
-        <label for="votePlayers">Nombre de joueurs (= votes attendus)</label>
+      <div class="admin">
+        <div class="admin-top"><span class="tag-s">Admin</span><button class="ghost" id="btnAdminOut">quitter</button></div>
+        <label for="votePlayers">Joueurs attendus</label>
         <div class="stepper">
-          <button class="chip" id="plMinus" aria-label="Moins">−</button>
+          <button id="plMinus" aria-label="Moins">−</button>
           <input type="number" id="votePlayers" min="0" max="99" step="1" inputmode="numeric" placeholder="∞">
-          <button class="chip" id="plPlus" aria-label="Plus">+</button>
+          <button id="plPlus" aria-label="Plus">+</button>
         </div>
-        <p class="hint">Quand ce nombre de votes est atteint, le résultat s'affiche et un nouveau vote s'ouvre tout seul.</p>
-        <button class="btn danger" id="btnVoteReset">Réinitialiser le vote</button>
+        <p class="note">Une fois ce nombre atteint, le résultat tombe et une nouvelle manche démarre.</p>
+        <button class="danger" id="btnVoteReset">Tout remettre à zéro</button>
       </div>
     </div></div>
   </section>
