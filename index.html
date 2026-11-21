@@ -222,11 +222,9 @@
   }
 
   /* Vote en direct */
-  .vote-title{font-size:1.35rem;font-weight:800;letter-spacing:-.02em;margin-bottom:4px;word-break:break-word}
   .vote-live{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
   .vote-live i{width:8px;height:8px;border-radius:50%;background:var(--amber)}
   .vote-live.on i{background:var(--green);animation:pulse 1.6s infinite}
-  .vote-live.closed i{background:var(--red)}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(22,163,74,.5)}100%{box-shadow:0 0 0 8px rgba(22,163,74,0)}}
   .vote-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
   .vote-btn{border:2px solid var(--line);background:#fff;border-radius:14px;padding:18px 10px;font-size:1.15rem;font-weight:800;cursor:pointer;font-family:inherit;transition:.12s;min-height:64px;touch-action:manipulation}
@@ -240,12 +238,6 @@
   .vote-bar{height:14px;border-radius:7px;background:#eef0f6;overflow:hidden}
   .vote-bar div{height:100%;border-radius:7px;transition:width .4s ease;width:0}
   .vote-total{font-size:.8rem;color:var(--muted);margin-top:4px}
-  .vote-share{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-  .vote-share input{flex:1;min-width:0;font-size:.8rem}
-  .vote-list{display:flex;flex-direction:column;gap:8px}
-  .vote-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer;font-weight:600;font-size:.9rem}
-  .vote-item:hover{border-color:var(--brand);color:var(--brand)}
-  .vote-item small{color:var(--muted);font-weight:500}
 </style>
 </head>
 <body>
@@ -354,38 +346,20 @@
         </div>
       </section>
       <section class="view" id="view-vote">
-        <div class="page-head"><h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Vote en direct</h1><p>Propose un jeu, partage le lien : chacun vote oui ou non de façon anonyme et les résultats s'affichent en direct.</p></div>
-        <div class="card" id="voteCreate">
-          <div class="card-h"><span class="d"></span>Nouveau vote</div>
-          <div class="field"><label for="voteName">Jeu proposé</label><input type="text" id="voteName" maxlength="80" placeholder="ex. Loup-garou, Uno, Codenames…"></div>
-          <button class="btn btn-primary btn-full" id="btnVoteCreate">Lancer le vote</button>
-          <div class="hint" style="margin-top:10px">Aucun nom n'est enregistré : seul « oui » ou « non » est transmis, avec un identifiant aléatoire propre à l'appareil (pour éviter les doubles votes).</div>
-        </div>
-        <div class="card" id="votePanel" style="display:none">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
-            <div style="min-width:0"><div class="vote-title" id="voteTitle">—</div><span class="vote-live" id="voteLive"><i></i><span>Connexion…</span></span></div>
-            <button class="chip" id="btnVoteBack">‹ Retour</button>
-          </div>
+        <div class="page-head"><h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Vote</h1><p>Vote anonyme oui ou non, résultat en direct.</p></div>
+        <div class="card">
+          <span class="vote-live" id="voteLive"><i></i><span>Connexion…</span></span>
           <div class="vote-btns">
             <button class="vote-btn oui" data-v="oui">👍 Oui</button>
             <button class="vote-btn non" data-v="non">👎 Non</button>
           </div>
-          <div class="hint" id="voteMine" style="margin:-6px 0 14px">Tu n'as pas encore voté. Tu peux changer d'avis tant que le vote est ouvert.</div>
+          <div class="hint" id="voteMine" style="margin:-6px 0 14px">Tu n'as pas encore voté.</div>
           <div class="vote-res">
             <div class="vote-row"><div class="lr"><span style="color:var(--green)">Oui</span><span id="vOuiTxt">0</span></div><div class="vote-bar"><div id="vOuiBar" style="background:var(--green)"></div></div></div>
             <div class="vote-row"><div class="lr"><span style="color:var(--red)">Non</span><span id="vNonTxt">0</span></div><div class="vote-bar"><div id="vNonBar" style="background:var(--red)"></div></div></div>
             <div class="vote-total" id="vTotal">0 vote</div>
           </div>
-          <div class="vote-share">
-            <input type="text" id="voteLink" readonly>
-            <button class="chip" id="btnVoteCopy">Copier le lien</button>
-            <button class="chip" id="btnVoteShare" style="display:none">Partager</button>
-            <button class="chip" id="btnVoteClose" style="color:var(--red);display:none">Clôturer</button>
-          </div>
-        </div>
-        <div class="card" id="voteHistory" style="display:none">
-          <div class="card-h"><span class="d"></span>Mes votes récents</div>
-          <div class="vote-list" id="voteList"></div>
+          <button class="btn btn-full" id="btnVoteReset" style="margin-top:16px;background:var(--red-soft);color:var(--red)">Réinitialiser le vote</button>
         </div>
       </section>
       <section class="view" id="view-params">
@@ -728,69 +702,31 @@ updateDayBadge();setPauseButtons(settings.defPauseMin);computeEnd();
 setInterval(tick,1000);tick();render();
 
 // ===== Vote en direct (relais temps réel : ntfy.sh, sans compte) =====
-const NTFY='https://ntfy.sh/', VKEY='badgheure_votes';
-let vote=null, vSrc=null, vState=null;
-function rid(n){const a=new Uint8Array(n);crypto.getRandomValues(a);return Array.from(a,b=>'abcdefghijklmnopqrstuvwxyz0123456789'[b%36]).join('')}
-function myVotes(){return load(VKEY,[])}
-function showView(name){document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
-  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+name))}
-function voteUrl(id,title){return location.origin+location.pathname+'?vote='+id+'&t='+encodeURIComponent(title)}
-function vPublish(obj){return fetch(NTFY+vote.topic,{method:'POST',body:JSON.stringify(obj)}).then(r=>{if(!r.ok)throw 0})}
-function voterId(id){const k='badgheure_voter_'+id;let v=localStorage.getItem(k);if(!v){v=rid(16);localStorage.setItem(k,v)}return v}
+const VTOPIC='https://ntfy.sh/badgheure-vote-k7q2m9x4w8d1p5z3';
+let vBallots={}, vResetAt=0, vSeen=new Set(), vSrc=null;
+const vMe=(()=>{let v=localStorage.getItem('badgheure_voter');if(!v){const a=new Uint8Array(12);crypto.getRandomValues(a);v=Array.from(a,b=>(b%36).toString(36)).join('');localStorage.setItem('badgheure_voter',v)}return v})();
 function setLive(cls,txt){const el=document.getElementById('voteLive');el.className='vote-live '+cls;el.querySelector('span').textContent=txt}
-function openVote(id,title){
-  if(vSrc){vSrc.close();vSrc=null}
-  vote={id,topic:'badgheure-vote-'+id,title:title||'Vote',me:voterId(id)};
-  vState={seen:new Set(),ballots:{},closedAt:null};
-  const list=myVotes().filter(x=>x.id!==id);const prev=myVotes().find(x=>x.id===id);
-  list.unshift({id,title:vote.title,admin:prev?prev.admin:false,ts:Date.now()});save(VKEY,list.slice(0,10));
-  vote.admin=!!(prev&&prev.admin);
-  document.getElementById('voteCreate').style.display='none';document.getElementById('voteHistory').style.display='none';
-  document.getElementById('votePanel').style.display='';
-  document.getElementById('voteTitle').textContent=vote.title;
-  document.getElementById('voteLink').value=voteUrl(id,vote.title);
-  document.getElementById('btnVoteClose').style.display=vote.admin?'':'none';
-  history.replaceState(null,'','?vote='+id+'&t='+encodeURIComponent(vote.title));
-  renderVote();setLive('','Connexion…');
-  vSrc=new EventSource(NTFY+vote.topic+'/sse?since=all');
-  vSrc.onopen=()=>setLive(vState.closedAt?'closed':'on',vState.closedAt?'Vote clôturé':'En direct');
-  vSrc.onerror=()=>{if(!vState.closedAt)setLive('','Reconnexion…')};
-  vSrc.onmessage=ev=>{let m,d;try{m=JSON.parse(ev.data);d=JSON.parse(m.message)}catch{return}
-    if(vState.seen.has(m.id))return;vState.seen.add(m.id);
-    if(d.k==='meta'&&d.title&&!new URLSearchParams(location.search).get('t')){vote.title=d.title;document.getElementById('voteTitle').textContent=d.title}
-    if(d.k==='close'){vState.closedAt=vState.closedAt?Math.min(vState.closedAt,m.time):m.time;setLive('closed','Vote clôturé')}
-    if(d.k==='v'&&(d.v==='oui'||d.v==='non')&&typeof d.u==='string'){const b=vState.ballots[d.u];if(!b||m.time>=b.t)vState.ballots[d.u]={v:d.v,t:m.time}}
-    renderVote()};
-}
-function renderVote(){if(!vote)return;let oui=0,non=0;const c=vState.closedAt;
-  Object.values(vState.ballots).forEach(b=>{if(c&&b.t>c)return;b.v==='oui'?oui++:non++});
+function vPublish(obj){return fetch(VTOPIC,{method:'POST',body:JSON.stringify(obj)}).then(r=>{if(!r.ok)throw 0})}
+function renderVote(){let oui=0,non=0;
+  Object.values(vBallots).forEach(b=>{if(b.t<vResetAt)return;b.v==='oui'?oui++:non++});
   const tot=oui+non,po=tot?Math.round(oui/tot*100):0,pn=tot?100-po:0;
   document.getElementById('vOuiTxt').textContent=oui+' · '+po+' %';document.getElementById('vNonTxt').textContent=non+' · '+pn+' %';
   document.getElementById('vOuiBar').style.width=po+'%';document.getElementById('vNonBar').style.width=pn+'%';
-  document.getElementById('vTotal').textContent=tot+(tot>1?' votes':' vote')+(c?' — résultat final : '+(oui>non?'OUI ✅':non>oui?'NON ❌':'égalité'):'');
-  const mine=vState.ballots[vote.me];
-  document.querySelectorAll('.vote-btn').forEach(b=>{b.classList.toggle('on',!!mine&&mine.v===b.dataset.v);b.disabled=!!c});
-  document.getElementById('voteMine').textContent=c?'Le vote est clôturé.':mine?'Ton vote : '+mine.v.toUpperCase()+' (anonyme). Tu peux encore changer d’avis.':'Tu n’as pas encore voté. Tu peux changer d’avis tant que le vote est ouvert.';
-  document.getElementById('btnVoteClose').style.display=vote.admin&&!c?'':'none';}
-function renderVoteHistory(){const l=myVotes(),box=document.getElementById('voteList');
-  document.getElementById('voteHistory').style.display=l.length?'':'none';box.innerHTML='';
-  l.forEach(x=>{const d=document.createElement('div');d.className='vote-item';const t=document.createElement('span');t.textContent=x.title;
-    const s=document.createElement('small');s.textContent=(x.admin?'créé · ':'')+new Date(x.ts).toLocaleDateString('fr-CH');d.append(t,s);d.onclick=()=>openVote(x.id,x.title);box.appendChild(d)})}
-function closeVotePanel(){if(vSrc){vSrc.close();vSrc=null}vote=null;history.replaceState(null,'',location.pathname);
-  document.getElementById('votePanel').style.display='none';document.getElementById('voteCreate').style.display='';renderVoteHistory()}
-document.getElementById('btnVoteCreate').onclick=async()=>{const name=document.getElementById('voteName').value.trim();if(!name){toast('Indique le nom du jeu');return}
-  const id=rid(14);const l=myVotes();l.unshift({id,title:name,admin:true,ts:Date.now()});save(VKEY,l.slice(0,10));
-  openVote(id,name);document.getElementById('voteName').value='';
-  try{await vPublish({k:'meta',title:name});toast('Vote lancé — partage le lien !')}catch{toast('Connexion impossible au serveur de vote')}};
-document.querySelectorAll('.vote-btn').forEach(b=>b.onclick=async()=>{if(!vote||vState.closedAt)return;
-  try{await vPublish({k:'v',v:b.dataset.v,u:vote.me});toast('Vote enregistré')}catch{toast('Échec de l’envoi, réessaie')}});
-document.getElementById('btnVoteBack').onclick=closeVotePanel;
-document.getElementById('btnVoteClose').onclick=async()=>{if(!confirm('Clôturer le vote ? Plus personne ne pourra voter.'))return;try{await vPublish({k:'close'});toast('Vote clôturé')}catch{toast('Échec, réessaie')}};
-document.getElementById('btnVoteCopy').onclick=()=>{const v=document.getElementById('voteLink').value;
-  (navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast('Lien copié')).catch(()=>{document.getElementById('voteLink').select();document.execCommand('copy');toast('Lien copié')})};
-if(navigator.share){const sb=document.getElementById('btnVoteShare');sb.style.display='';sb.onclick=()=>navigator.share({title:'Vote : '+vote.title,text:'Vote anonyme : on joue à « '+vote.title+' » ? Oui ou non ?',url:document.getElementById('voteLink').value}).catch(()=>{})}
-renderVoteHistory();
-{const q=new URLSearchParams(location.search),vid=q.get('vote');if(vid&&/^[a-z0-9]{6,32}$/.test(vid)){showView('vote');openVote(vid,q.get('t'))}}
+  document.getElementById('vTotal').textContent=tot+(tot>1?' votes':' vote');
+  const m=vBallots[vMe],mine=m&&m.t>=vResetAt?m:null;
+  document.querySelectorAll('.vote-btn').forEach(b=>b.classList.toggle('on',!!mine&&mine.v===b.dataset.v));
+  document.getElementById('voteMine').textContent=mine?'Ton vote : '+mine.v.toUpperCase()+' (anonyme). Tu peux changer d’avis.':'Tu n’as pas encore voté.'}
+function vConnect(){vSrc=new EventSource(VTOPIC+'/sse?since=all');
+  vSrc.onopen=()=>setLive('on','En direct');
+  vSrc.onerror=()=>setLive('','Reconnexion…');
+  vSrc.onmessage=ev=>{let m,d;try{m=JSON.parse(ev.data);d=JSON.parse(m.message)}catch{return}
+    if(vSeen.has(m.id))return;vSeen.add(m.id);
+    if(d.k==='reset')vResetAt=Math.max(vResetAt,m.time);
+    if(d.k==='v'&&(d.v==='oui'||d.v==='non')&&typeof d.u==='string'){const b=vBallots[d.u];if(!b||m.time>=b.t)vBallots[d.u]={v:d.v,t:m.time}}
+    renderVote()}}
+document.querySelectorAll('.vote-btn').forEach(b=>b.onclick=async()=>{try{await vPublish({k:'v',v:b.dataset.v,u:vMe});toast('Vote enregistré')}catch{toast('Échec de l’envoi, réessaie')}});
+document.getElementById('btnVoteReset').onclick=async()=>{if(!confirm('Réinitialiser le vote pour tout le monde ?'))return;try{await vPublish({k:'reset'});toast('Vote réinitialisé')}catch{toast('Échec, réessaie')}};
+renderVote();vConnect();
 </script>
 </body>
 </html>
