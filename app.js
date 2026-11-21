@@ -55,7 +55,7 @@ function tweenText(el, to, fmt, ms = 450) {
     const b = document.createElement('button');
     b.className = 'rail-tab'; b.dataset.tab = t.dataset.tab; b.setAttribute('aria-label', t.textContent.trim());
     b.innerHTML = t.querySelector('.tab-ico').outerHTML + '<span></span>';
-    b.lastChild.textContent = t.dataset.short || t.textContent.trim().split(' ')[0];
+    b.lastChild.textContent = t.dataset.short || t.textContent.trim();
     b.onclick = () => show(t.dataset.tab, true);
     rail.appendChild(b); return b;
   });

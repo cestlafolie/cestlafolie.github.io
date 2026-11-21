@@ -37,7 +37,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;-we
 
 /* ===== Barre fine à gauche, toujours visible ===== */
 .rail{position:fixed;top:0;left:0;bottom:0;width:var(--railx);padding:calc(8px + env(safe-area-inset-top)) 0 calc(10px + env(safe-area-inset-bottom)) env(safe-area-inset-left);background:#0e0b09;border-right:1px solid var(--night-line);display:flex;flex-direction:column;align-items:center;gap:6px;z-index:30}
-.rail-tab{position:relative;width:48px;padding:10px 0 8px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--cream-dim);font:600 .58rem var(--head);letter-spacing:.08em;text-transform:uppercase;border-radius:3px;transition:color .2s,background .2s}
+.rail-tab{position:relative;width:50px;padding:10px 2px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--cream-dim);font:600 .6rem/1.15 var(--head);letter-spacing:.06em;text-align:center;text-transform:uppercase;border-radius:3px;transition:color .2s,background .2s}
 .rail-tab:active{background:var(--night-2)}
 .rail-tab.active{color:var(--cream);background:var(--night-2)}
 .rail-tab.active::before{content:"";position:absolute;left:-4px;top:8px;bottom:8px;width:3px;background:var(--red)}
