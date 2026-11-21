@@ -346,11 +346,11 @@
         </div>
       </section>
       <section class="view" id="view-vote">
-        <div class="page-head"><h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Vote</h1><p>Vote anonyme oui ou non, résultat en direct.</p></div>
+        <div class="page-head"><h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Vote</h1><p>Vote anonyme oui ou non, résultat en direct. L'admin fixe le nombre de joueurs et réinitialise.</p></div>
         <div class="card">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
             <span class="vote-live" id="voteLive"><i></i><span>Connexion…</span></span>
-            <div style="display:flex;align-items:center;gap:8px"><label for="votePlayers" style="margin:0">Joueurs</label><input type="number" id="votePlayers" min="1" max="99" step="1" inputmode="numeric" placeholder="—" style="width:76px;text-align:center"></div>
+            <button class="chip" id="btnAdmin">🔒 Admin</button>
           </div>
           <div class="vote-btns">
             <button class="vote-btn oui" data-v="oui">👍 Oui</button>
@@ -362,7 +362,12 @@
             <div class="vote-row"><div class="lr"><span style="color:var(--red)">Non</span><span id="vNonTxt">0</span></div><div class="vote-bar"><div id="vNonBar" style="background:var(--red)"></div></div></div>
             <div class="vote-total" id="vTotal">0 vote</div>
           </div>
-          <button class="btn btn-full" id="btnVoteReset" style="margin-top:16px;background:var(--red-soft);color:var(--red)">Réinitialiser le vote</button>
+        </div>
+        <div class="card" id="adminPanel" style="display:none">
+          <div class="card-h"><span class="d"></span>Admin du vote</div>
+          <div class="field"><label for="votePlayers">Nombre de joueurs (= votes max)</label><input type="number" id="votePlayers" min="0" max="99" step="1" inputmode="numeric" placeholder="illimité"></div>
+          <button class="btn btn-full" id="btnVoteReset" style="background:var(--red-soft);color:var(--red)">Réinitialiser le vote</button>
+          <button class="chip" id="btnAdminOut" style="margin-top:12px">Quitter le mode admin</button>
         </div>
       </section>
       <section class="view" id="view-params">
@@ -722,19 +727,43 @@ function renderVote(){const ballots=vTally(),max=vPlayers.n;let oui=0,non=0;ball
   const mine=ballots.get(vMe),blocked=full&&!mine;
   document.querySelectorAll('.vote-btn').forEach(b=>{b.classList.toggle('on',!!mine&&mine===b.dataset.v);b.disabled=blocked});
   document.getElementById('voteMine').textContent=mine?'Ton vote : '+mine.toUpperCase()+' (anonyme). Tu peux changer d’avis.':blocked?'Tout le monde a déjà voté ('+max+' joueurs).':'Tu n’as pas encore voté.'}
+// --- Admin : seuls les messages signés avec la clé admin (débloquée par mot de passe) sont acceptés
+const VADMIN={"pub": "BMragD96AUSFozDC1lvCc4NOii6S7sUlmi2j4JfSGvWxyN7KZDLT8lIQW0GVxmGXN3kjOI+GUkP8UpjLfLZRW4Q=", "salt": "YRCwiWqxX2biEY1F/CEZKg==", "iv": "r4Bvt6uCLQcO+0XD", "ct": "+Z2X+kawgw5VcNxw809Xlfi4WCDJ96eiSRc4Ah9D/+LJmoykSimKdyv4ZVQSSFSPB8e8JQVcCNFHG1gqyOxzrjBmEUeUPX1m/3T7GpX6rCi7a+GwpDAEWfa4CYlKLF4jGTMsFLKP2t2SxrFIP/zldUhLdtbtG9nr2WDUWpsndQZdW3bLPgRqsfmxYyRO2l+K5GhcavZmSmx7BA=="};
+const b64=x=>Uint8Array.from(atob(x),c=>c.charCodeAt(0)), tob64=buf=>btoa(String.fromCharCode(...new Uint8Array(buf)));
+const vPubKey=crypto.subtle.importKey('raw',b64(VADMIN.pub),{name:'ECDSA',namedCurve:'P-256'},false,['verify']);
+let vAdminKey=null, vNonces=new Set();
+const vCanon=d=>JSON.stringify({k:d.k,n:d.n??null,nonce:d.nonce});
+async function vVerify(d){try{if(typeof d.nonce!=='string'||typeof d.sig!=='string'||vNonces.has(d.nonce))return false;
+  const ok=await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},await vPubKey,b64(d.sig),new TextEncoder().encode(vCanon(d)));if(ok)vNonces.add(d.nonce);return ok}catch{return false}}
+async function vAdminPublish(d){d.nonce=Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');
+  d.sig=tob64(await crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},vAdminKey,new TextEncoder().encode(vCanon(d))));return vPublish(d)}
+async function vUnlock(pw){const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
+  const k=await crypto.subtle.deriveKey({name:'PBKDF2',salt:b64(VADMIN.salt),iterations:300000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
+  return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:b64(VADMIN.iv)},k,b64(VADMIN.ct)))}
+async function vSetAdmin(pkcs8){vAdminKey=pkcs8?await crypto.subtle.importKey('pkcs8',pkcs8,{name:'ECDSA',namedCurve:'P-256'},false,['sign']):null;
+  document.getElementById('adminPanel').style.display=vAdminKey?'':'none';document.getElementById('btnAdmin').textContent=vAdminKey?'🔓 Admin':'🔒 Admin';renderVote()}
+document.getElementById('btnAdmin').onclick=async()=>{if(vAdminKey){document.getElementById('adminPanel').scrollIntoView({behavior:'smooth'});return}
+  const pw=prompt('Mot de passe admin');if(!pw)return;
+  try{const pk=await vUnlock(pw.trim());localStorage.setItem('badgheure_admin',tob64(pk));await vSetAdmin(pk);toast('Mode admin activé')}catch{toast('Mot de passe incorrect')}};
+document.getElementById('btnAdminOut').onclick=()=>{localStorage.removeItem('badgheure_admin');vSetAdmin(null);toast('Mode admin désactivé')};
+{const s=localStorage.getItem('badgheure_admin');if(s)vSetAdmin(b64(s)).catch(()=>localStorage.removeItem('badgheure_admin'))}
+let vQueue=Promise.resolve();
+function vHandle(m,d){
+    if(d.k==='reset')vResetAt=Math.max(vResetAt,m.time);
+    if(d.k==='players'&&Number.isInteger(d.n)&&d.n>=0&&m.time>=vPlayers.t)vPlayers={n:d.n,t:m.time};
+    if(d.k==='v'&&(d.v==='oui'||d.v==='non')&&typeof d.u==='string')vEvents.push({u:d.u,v:d.v,t:m.time,o:vOrder++});
+    renderVote()}
 function vConnect(){vSrc=new EventSource(VTOPIC+'/sse?since=all');
   vSrc.onopen=()=>setLive('on','En direct');
   vSrc.onerror=()=>setLive('','Reconnexion…');
   vSrc.onmessage=ev=>{let m,d;try{m=JSON.parse(ev.data);d=JSON.parse(m.message)}catch{return}
     if(vSeen.has(m.id))return;vSeen.add(m.id);
-    if(d.k==='reset')vResetAt=Math.max(vResetAt,m.time);
-    if(d.k==='players'&&Number.isInteger(d.n)&&d.n>=0&&m.time>=vPlayers.t)vPlayers={n:d.n,t:m.time};
-    if(d.k==='v'&&(d.v==='oui'||d.v==='non')&&typeof d.u==='string')vEvents.push({u:d.u,v:d.v,t:m.time,o:vOrder++});
-    renderVote()}}
-document.getElementById('votePlayers').onchange=async e=>{const n=Math.max(0,Math.min(99,Math.round(+e.target.value||0)));
-  try{await vPublish({k:'players',n});toast(n?n+' joueurs : '+n+' votes max':'Nombre de joueurs retiré')}catch{toast('Échec, réessaie')}};
-document.querySelectorAll('.vote-btn').forEach(b=>b.onclick=async()=>{if(b.disabled)return;try{await vPublish({k:'v',v:b.dataset.v,u:vMe});toast('Vote enregistré')}catch{toast('Échec de l’envoi, réessaie')}});
-document.getElementById('btnVoteReset').onclick=async()=>{if(!confirm('Réinitialiser le vote pour tout le monde ?'))return;try{await vPublish({k:'reset'});toast('Vote réinitialisé')}catch{toast('Échec, réessaie')}};
+    if(d.k==='reset'||d.k==='players')vQueue=vQueue.then(()=>vVerify(d)).then(ok=>{if(ok)vHandle(m,d)});
+    else vQueue=vQueue.then(()=>vHandle(m,d))}}
+document.getElementById('votePlayers').onchange=async e=>{if(!vAdminKey)return;const n=Math.max(0,Math.min(99,Math.round(+e.target.value||0)));
+  try{await vAdminPublish({k:'players',n});toast(n?n+' joueurs : '+n+' votes max':'Sans limite de joueurs')}catch{toast('Échec, réessaie')}};
+document.getElementById('btnVoteReset').onclick=async()=>{if(!vAdminKey)return;if(!confirm('Réinitialiser le vote pour tout le monde ?'))return;try{await vAdminPublish({k:'reset'});toast('Vote réinitialisé')}catch{toast('Échec, réessaie')}};
+document.querySelectorAll('.vote-btn').forEach(b=>b.onclick=async()=>{if(b.disabled)return;try{await vPublish({k:'v',v:b.dataset.v,u:vMe});toast('Vote enregistré')}catch{toast('Échec de l\u2019envoi, réessaie')}});
 renderVote();vConnect();
 </script>
 </body>
