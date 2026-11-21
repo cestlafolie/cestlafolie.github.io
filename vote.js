@@ -8,7 +8,7 @@
 // Les messages admin sont signés (ECDSA) ; la clé privée n'est déchiffrable qu'avec le mot de passe.
 (() => {
 const TOPIC = 'https://ntfy.sh/badgheure-vote-k7q2m9x4w8d1p5z3';
-const VADMIN={"pub": "BMragD96AUSFozDC1lvCc4NOii6S7sUlmi2j4JfSGvWxyN7KZDLT8lIQW0GVxmGXN3kjOI+GUkP8UpjLfLZRW4Q=", "salt": "YRCwiWqxX2biEY1F/CEZKg==", "iv": "r4Bvt6uCLQcO+0XD", "ct": "+Z2X+kawgw5VcNxw809Xlfi4WCDJ96eiSRc4Ah9D/+LJmoykSimKdyv4ZVQSSFSPB8e8JQVcCNFHG1gqyOxzrjBmEUeUPX1m/3T7GpX6rCi7a+GwpDAEWfa4CYlKLF4jGTMsFLKP2t2SxrFIP/zldUhLdtbtG9nr2WDUWpsndQZdW3bLPgRqsfmxYyRO2l+K5GhcavZmSmx7BA=="};
+const VADMIN={"pub": "BAPP3n/eMqA4M+B8qwidPcQvmTNwAB6lN87Mj2HpdfoVx7OcvwCWixHBo1xfOep4fTMJ6Dl8le87pqeuErWOSzA=", "salt": "uIlXKtSfduvM0lHBP3iMyg==", "iv": "VoNClJ1lZk8i8TQH", "ct": "jaqbA96WuWrVR1vIP8/ixwZhxtnZUnbnUczSR+DszWzCcbgB0YJPOr2k2KjhAOAtMjvdjhK7qLffiWLhFktc7LF0a1QOJ/xkiwB84uohA8065f4OQH1YxQrCK4meIrLpj/EwuLKekB1zmEuL+pOKzDB+iry5wKLK7yroFHqdZOHgDUPlKXQqOhpogawsWkeXTNI24lNH97rA9A=="};
 
 // ---- état
 let timeline = [], seen = new Set(), pending = null, live = false, lastRounds = null, adminKey = null;
