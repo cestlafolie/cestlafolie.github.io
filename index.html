@@ -8,27 +8,27 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Vote H">
 <meta name="format-detection" content="telephone=no">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23121110'/%3E%3Ccircle cx='66' cy='90' r='26' fill='%23d4f54a'/%3E%3Ccircle cx='114' cy='90' r='26' fill='%23ff5b3a'/%3E%3C/svg%3E">
-<meta name="theme-color" content="#121110">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23efe4cc'/%3E%3Crect x='30' y='42' width='120' height='96' fill='none' stroke='%23a3261b' stroke-width='12' transform='rotate(-8 90 90)'/%3E%3Ctext x='90' y='114' font-family='Arial Black,sans-serif' font-weight='900' font-size='66' text-anchor='middle' fill='%23a3261b' transform='rotate(-8 90 90)'%3EH%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#15110e">
 <meta name="color-scheme" content="dark">
 <title>Vote secret H</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23121110'/%3E%3Ccircle cx='24' cy='32' r='9' fill='%23d4f54a'/%3E%3Ccircle cx='42' cy='32' r='9' fill='%23ff5b3a'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='6' fill='%23efe4cc'/%3E%3Crect x='10' y='14' width='44' height='36' fill='none' stroke='%23a3261b' stroke-width='5' transform='rotate(-8 32 32)'/%3E%3Ctext x='32' y='41' font-family='Arial Black,sans-serif' font-weight='900' font-size='24' text-anchor='middle' fill='%23a3261b' transform='rotate(-8 32 32)'%3EH%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://ntfy.sh" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil:wght@700;900&family=Oswald:wght@500;600;700&family=Special+Elite&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div class="scrim" id="scrim"></div>
 <!-- Menu latéral : un bouton par onglet (data-tab = id du module sans « mod- ») -->
 <aside class="sidenav" id="side">
-  <a class="mark" href="./">jeux<span>.</span></a>
+  <a class="mark" href="./">Dossier<span>H</span></a>
   <nav class="tabs">
     <p class="tabs-t">Onglets</p>
     <button class="tab" data-tab="vote"><i class="tab-ico"><b></b><b></b></i>Vote secret H</button>
   </nav>
-  <p class="sidenav-foot">entre nous</p>
+  <p class="sidenav-foot">document confidentiel</p>
 </aside>
 
 <header class="top">
@@ -45,39 +45,41 @@
 
   <!-- ===== Module : vote oui / non ===== -->
   <section class="module" id="mod-vote" data-title="Vote secret H">
-    <div class="tag"><span>Anonyme</span><span id="vRound">Manche 1</span></div>
-    <h2 class="q">On joue&nbsp;?</h2>
+    <div class="dossier">
+    <div class="tag"><span class="stamp-s">Confidentiel</span><span id="vRound">Manche 1</span></div>
+    <h2 class="q">Ton bulletin</h2>
 
     <div class="vote-btns">
       <button class="vote-btn oui" data-v="oui"><b>Oui</b></button>
       <button class="vote-btn non" data-v="non"><b>Non</b></button>
     </div>
-    <p class="mine" id="voteMine">Ton vote reste anonyme.</p>
+    <p class="mine" id="voteMine">Vote à bulletin secret.</p>
 
     <div class="board">
       <div class="score">
-        <div class="side oui"><span class="n" id="vOuiN">0</span><span class="p" id="vOuiP">0%</span></div>
-        <span class="vs">—</span>
-        <div class="side non"><span class="p" id="vNonP">0%</span><span class="n" id="vNonN">0</span></div>
+        <div class="side oui"><span class="lbl">Oui</span><span class="n" id="vOuiN">0</span><span class="p" id="vOuiP">0%</span></div>
+        <span class="vs"></span>
+        <div class="side non"><span class="lbl">Non</span><span class="n" id="vNonN">0</span><span class="p" id="vNonP">0%</span></div>
       </div>
       <div class="split"><div id="vOuiBar"></div><div id="vNonBar"></div></div>
       <div class="progress"><span id="vTotal">0 vote</span><span class="segs" id="vDots"></span></div>
     </div>
 
     <div class="reveal" id="vLastWrap"><div><div class="last" id="vLast"></div></div></div>
+    </div>
 
     <button class="admin-link" id="btnAdmin">admin</button>
 
     <div class="reveal" id="adminWrap"><div>
       <div class="admin">
-        <div class="admin-top"><span class="tag-s">Admin</span><button class="ghost" id="btnAdminOut">quitter</button></div>
+        <div class="admin-top"><span class="tag-s">Accès restreint</span><button class="ghost" id="btnAdminOut">quitter</button></div>
         <label for="votePlayers">Joueurs attendus</label>
         <div class="stepper">
           <button id="plMinus" aria-label="Moins">−</button>
           <input type="number" id="votePlayers" min="0" max="99" step="1" inputmode="numeric" placeholder="∞">
           <button id="plPlus" aria-label="Plus">+</button>
         </div>
-        <p class="note">Une fois ce nombre atteint, le résultat tombe et une nouvelle manche démarre.</p>
+        <p class="note">Une fois ce nombre de bulletins atteint, le résultat tombe et une nouvelle manche démarre.</p>
         <button class="danger" id="btnVoteReset">Tout remettre à zéro</button>
       </div>
     </div></div>

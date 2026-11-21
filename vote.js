@@ -34,7 +34,7 @@ function tally() {
   }
   return { ballots, last, rounds, max };
 }
-const verdict = (o, n) => o > n ? 'Oui' : n > o ? 'Non' : 'Égalité';
+const verdict = (o, n) => o > n ? 'Adopté' : n > o ? 'Rejeté' : 'Égalité · rejeté';   // égalité = rejet
 
 // ---- affichage
 function setLive(on, txt) { const el = $('voteLive'); el.classList.toggle('on', on); el.lastElementChild.textContent = txt; }
@@ -54,7 +54,7 @@ function render() {
   tweenText($('vNonP'), pn, x => x + '%');
   $('vOuiBar').style.transform = 'scaleX(' + po / 100 + ')';
   $('vNonBar').style.transform = 'scaleX(' + pn / 100 + ')';
-  $('vTotal').textContent = max ? tot + '/' + max + ' ont voté' : tot + (tot > 1 ? ' votes' : ' vote');
+  $('vTotal').textContent = max ? tot + '/' + max + ' bulletins' : tot + (tot > 1 ? ' bulletins' : ' bulletin');
   $('vRound').textContent = 'Manche ' + (rounds + 1);
 
   // segments de progression (un par joueur attendu)
@@ -67,13 +67,13 @@ function render() {
   // résultat de la manche précédente
   const wrap = $('vLastWrap'), box = $('vLast');
   if (last) {
-    box.className = 'last ' + (last.oui > last.non ? 'oui' : last.non > last.oui ? 'non' : '');
+    box.className = 'last ' + (last.oui > last.non ? 'oui' : 'non');
     box.innerHTML = '';
     const l = document.createElement('div');
     const k = document.createElement('div'); k.className = 'k'; k.textContent = 'Manche ' + rounds;
     const v = document.createElement('div'); v.className = 'v'; v.textContent = verdict(last.oui, last.non);
     l.append(k, v);
-    const d = document.createElement('div'); d.className = 'd'; d.textContent = last.oui + ' – ' + last.non;
+    const d = document.createElement('div'); d.className = 'd'; d.textContent = last.oui + ' oui – ' + last.non + ' non';
     box.append(l, d);
   }
   wrap.classList.toggle('open', !!last);
@@ -89,7 +89,7 @@ function render() {
     b.classList.toggle('pending', !!pending && pending.v === b.dataset.v);
     b.disabled = !!mine;
   });
-  $('voteMine').textContent = mine ? 'C’est noté. Personne ne sait ce que tu as voté.' : 'Ton vote reste anonyme.';
+  $('voteMine').textContent = mine ? 'Bulletin déposé. Personne ne saura.' : 'Vote à bulletin secret.';
 
   const pl = $('votePlayers'); if (document.activeElement !== pl) pl.value = max || '';
 }
