@@ -72,8 +72,8 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;-we
 .q{font-size:clamp(2.4rem,min(13vw,7.5dvh),3.6rem);font-weight:800;letter-spacing:-.045em;line-height:.95;margin:clamp(10px,2.2dvh,18px) 0 clamp(14px,2.8dvh,22px)}
 
 .vote-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.vote-btn{position:relative;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;text-align:left;height:clamp(118px,19dvh,170px);padding:16px 16px 14px;border-radius:22px;-webkit-user-select:none;user-select:none;border:1.5px solid var(--line);background:var(--card);transition:transform .18s var(--ease),background .25s,border-color .25s,color .25s,opacity .3s}
-.vote-btn b{font-size:2.3rem;font-weight:800;letter-spacing:-.04em;line-height:1}
+.vote-btn{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;height:clamp(118px,19dvh,170px);padding:16px 16px 14px;border-radius:22px;-webkit-user-select:none;user-select:none;border:1.5px solid var(--line);background:var(--card);transition:transform .18s var(--ease),background .25s,border-color .25s,color .25s,opacity .3s}
+.vote-btn b{font-size:clamp(2.4rem,11vw,3rem);font-weight:800;letter-spacing:-.04em;line-height:1}
 .vote-btn small{font:500 .72rem var(--mono);color:var(--dim);transition:color .25s}
 .vote-btn.oui b{color:var(--oui)}.vote-btn.non b{color:var(--non)}
 .vote-btn::after{content:"";position:absolute;top:16px;right:16px;width:12px;height:12px;border-radius:50%;border:1.5px solid var(--line);transition:.25s}
