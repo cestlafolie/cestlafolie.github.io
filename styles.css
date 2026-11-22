@@ -490,3 +490,22 @@ body[data-tab="anime"] .burger span{background:#f5f3ff}
 .h-anime-ico{font:800 .95rem "Manrope",sans-serif;background:linear-gradient(90deg,#ff7a00,#e5383b,#5b5fef);color:#fff;border-radius:10px;padding:6px 10px;margin-bottom:4px}
 .tab-ico.ani b{width:12px;height:12px;border-radius:50%;background:var(--night-line)}
 .tab.active .tab-ico.ani b{background:conic-gradient(#ff7a00,#e5383b,#5b5fef,#ff7a00)}
+
+/* ===== Menu latéral : style neutre et moderne, propre au site (pas celui d'un jeu) ===== */
+.sidenav{background:#0f1424;border-right:1px solid rgba(255,255,255,.06);padding:calc(24px + env(safe-area-inset-top)) 14px calc(18px + env(safe-area-inset-bottom));font-family:"Manrope",system-ui,sans-serif}
+.mark{font:inherit;letter-spacing:0;text-transform:none;display:flex;align-items:center;gap:12px;padding:0 6px;color:#fff}
+.mark .mark-logo{width:42px;height:42px;border:none;transform:none;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,#4d7cfe,#8338ec 55%,#ff4d6d);color:#fff;font:800 1rem "Manrope",sans-serif;box-shadow:0 8px 20px rgba(77,124,254,.35)}
+.mark-t{display:flex;flex-direction:column;font:800 1.12rem/1.15 "Manrope",sans-serif;letter-spacing:-.02em}
+.mark-t small{font:600 .76rem "Manrope",sans-serif;letter-spacing:0;color:#8b93ab}
+.tabs{margin-top:30px;gap:4px}
+.tabs-t{font:700 .7rem "Manrope",sans-serif;text-transform:uppercase;letter-spacing:.12em;color:#6b7390;padding:0 10px 8px}
+.tab{gap:14px;min-height:54px;padding:8px 10px;border-radius:14px;font:700 1rem "Manrope",sans-serif;letter-spacing:-.01em;text-transform:none;color:#c7cde0;transition:background .2s,color .2s}
+.tab:active{background:rgba(255,255,255,.06)}
+.tab.active{color:#fff;background:rgba(255,255,255,.08)}
+.tab.active::before{left:-14px;top:14px;bottom:14px;width:4px;border-radius:0 4px 4px 0;background:linear-gradient(#4d7cfe,#ff4d6d)}
+.ti{width:38px;height:38px;flex:none;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,var(--t1),var(--t2));color:var(--tc,#fff);box-shadow:0 6px 14px rgba(0,0,0,.3);opacity:.75;transition:opacity .2s,transform .2s}
+.ti svg{width:20px;height:20px}
+.tab.active .ti{opacity:1;transform:scale(1.05)}
+.sidenav-foot{font:600 .74rem "Manrope",sans-serif;color:#4a5272;padding:0 10px}
+.scrim{background:rgba(5,8,18,.6);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+.mark .mark-t{display:flex;width:auto;height:auto;border:none;transform:none;color:#fff;place-items:initial;font-size:1.12rem;white-space:nowrap}
