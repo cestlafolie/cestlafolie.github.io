@@ -38,7 +38,7 @@ const ROLES = {
   idiot: { n: 'Idiot du Village', camp: 'village', d: 'Si le village vote contre toi, tu es épargné : ton rôle est révélé, mais tu ne peux plus voter.' },
   corbeau: { n: 'Corbeau', camp: 'village', d: 'Chaque nuit, tu désignes un joueur : il aura 2 voix de plus contre lui au vote du lendemain.' },
   sauvage: { n: 'Enfant Sauvage', camp: 'village', d: 'La première nuit, tu choisis un modèle. S’il meurt, tu deviens un Loup-Garou.' },
-  ancetre: { n: 'Ancêtre', camp: 'village', d: 'Tu survis à la première attaque des loups.' },
+  ancetre: { n: 'Ancêtre', camp: 'village', d: 'Tu survis à la première attaque des loups. Mais si le village te tue (vote, Chasseur, Sorcière), tous les villageois perdent leurs pouvoirs.' },
   bouc: { n: 'Bouc Émissaire', camp: 'village', d: 'En cas d’égalité au vote du village, c’est toi qui es éliminé.' },
 };
 const SPECIAL = ['voyante', 'sorciere', 'chasseur', 'cupidon', 'petite', 'garde', 'maire', 'voleur', 'idiot', 'corbeau', 'sauvage', 'ancetre', 'bouc'];
@@ -61,6 +61,7 @@ const nVill = c => n() - Object.values(c).reduce((a, b) => a + b, 0);
 const alive = () => S.g.p.map((p, i) => p.alive ? i : -1).filter(i => i >= 0);
 const nameOf = i => S.g.p[i].name;
 const roleOf = i => S.g.p[i].role;
+const isMayor = i => S.g.mayorIdx == null ? S.g.p[i].role === 'maire' : S.g.mayorIdx === i;
 const isWolf = i => WOLVES.includes(roleOf(i)) || (roleOf(i) === 'sauvage' && S.g.wild);
 const wolfCount = c => WOLVES.reduce((t, r) => t + (c[r] || 0), 0);
 
@@ -113,7 +114,7 @@ function start() {
 
 function newGame(names, roles, phase) {
   return { phase, di: 0, shown: false, night: 1, step: 0, p: names.map((name, i) => ({ name, role: roles[i], alive: true })),
-    lovers: null, life: true, poison: true, victim: null, saved: false, poisoned: null, seen: null, log: [], dead: [], queue: [], after: null, winner: null,
+    lovers: null, life: true, poison: true, victim: null, saved: null, poisoned: null, seen: null, log: [], dead: [], queue: [], after: null, winner: null,
     guard: null, lastGuard: null, raven: null, ravenNext: null, model: null, wild: false, stolen: false, gmVictim: null, lbVictim: null,
     ancUsed: false, idiotOut: false, wolfDied: false, mayorIdx: null, notes: [] };
 }
@@ -138,18 +139,19 @@ function deal() {
 
 // ----- la nuit : liste des étapes selon les rôles encore en vie -----
 const has = r => S.g.p.some(p => p.alive && p.role === r);
+const pw = r => has(r) && !S.g.powerless;   // rôle du village encore en vie ET pouvoirs intacts
 function steps() {
   const g = S.g, s = [];
   if (g.night === 1 && (has('voleur') || g.stolen)) s.push('voleur');
   if (g.night === 1 && S.g.p.some(p => p.role === 'cupidon')) s.push('cupidon');
   if (g.night === 1 && has('sauvage')) s.push('sauvage');
-  if (has('garde')) s.push('garde');
-  if (has('voyante')) s.push('voyante');
-  if (has('corbeau')) s.push('corbeau');
+  if (pw('garde')) s.push('garde');
+  if (pw('voyante')) s.push('voyante');
+  if (pw('corbeau')) s.push('corbeau');
   s.push('loups');
   if (has('grandloup') && !g.wolfDied) s.push('grandloup');
   if (has('loupblanc') && g.night % 2 === 0 && alive().some(i => isWolf(i) && roleOf(i) !== 'loupblanc')) s.push('loupblanc');
-  if (has('sorciere') && (g.life || g.poison)) s.push('sorciere');
+  if (pw('sorciere') && (g.life || g.poison)) s.push('sorciere');
   return s;
 }
 function pick(list, act, sel, label) {
@@ -196,7 +198,7 @@ function night() {
   } else if (cur === 'sorciere') {
     body = box('sorciere', 'La Sorcière se réveille', 'Sorcière, voici la victime des loups.') +
       `<div class="lg-reveal lg-bad"><span>Victime${victims.length > 1 ? 's' : ''} : <b>${victims.map(i => esc(nameOf(i))).join(' et ')}</b></span></div>` +
-      (g.life ? `<button class="lg-opt${g.saved ? ' on' : ''}" data-a="save">${icon('sorciere', 'sm')} Potion de vie : ${g.saved ? 'elle sauve ' + esc(nameOf(g.victim)) : 'sauver ' + esc(nameOf(g.victim)) + ' ?'}</button>` : '<p class="lg-muted">Potion de vie déjà utilisée.</p>') +
+      (g.life ? victims.map(v => `<button class="lg-opt${g.saved === v ? ' on' : ''}" data-a="save" data-i="${v}">${icon('sorciere', 'sm')} Potion de vie : ${g.saved === v ? 'elle sauve ' + esc(nameOf(v)) : 'sauver ' + esc(nameOf(v)) + ' ?'}</button>`).join('') : '<p class="lg-muted">Potion de vie déjà utilisée.</p>') +
       (g.poison ? `<p class="lg-label">Potion de mort : tuer quelqu’un ? (facultatif)</p>${pick(al.filter(i => roleOf(i) !== 'sorciere'), 'poison', g.poisoned)}` : '<p class="lg-muted">Potion de mort déjà utilisée.</p>') +
       nextBtn('La Sorcière se rendort');
   }
@@ -220,13 +222,14 @@ function endNight() {
     if (roleOf(v) === 'ancetre' && !g.ancUsed) { g.ancUsed = true; return; }   // l'Ancêtre survit une fois (secret)
     deaths.push(v);
   };
-  if (!g.saved) attack(g.victim); else g.life = false;
-  attack(g.gmVictim);
+  if (g.saved !== null && g.saved !== false) g.life = false;
+  [g.victim, g.gmVictim].forEach(v => { if (v !== g.saved) attack(v); });
   if (g.lbVictim !== null) deaths.push(g.lbVictim);
-  if (g.poisoned !== null) { deaths.push(g.poisoned); g.poison = false; }
+  g.vk = [];
+  if (g.poisoned !== null) { deaths.push(g.poisoned); g.vk.push(g.poisoned); g.poison = false; }
   g.ravenNext = g.raven;
   g.lastGuard = g.guard;
-  g.victim = null; g.gmVictim = null; g.lbVictim = null; g.saved = false; g.poisoned = null; g.seen = null; g.tmp = null; g.guard = null; g.raven = null; g.step = 0;
+  g.victim = null; g.gmVictim = null; g.lbVictim = null; g.saved = null; g.poisoned = null; g.seen = null; g.tmp = null; g.guard = null; g.raven = null; g.step = 0;
   g.dead = []; g.queue = [...new Set(deaths)]; g.after = 'day';
   resolveDeaths();
 }
@@ -238,10 +241,11 @@ function resolveDeaths() {
     if (!g.p[i].alive) continue;
     g.p[i].alive = false; g.dead.push(i);
     if (isWolf(i)) g.wolfDied = true;
+    if (g.p[i].role === 'ancetre' && (g.vk || []).includes(i) && !g.powerless) { g.powerless = true; g.notes.push('Le village a tué l\u2019Ancêtre : tous les villageois perdent leurs pouvoirs.'); }
     if (g.lovers && g.lovers.includes(i)) { const o = g.lovers.find(x => x !== i); if (g.p[o].alive) g.queue.push(o); }
     if (g.model === i && !g.wild && has('sauvage')) { g.wild = true; if (S.mode === 'host') resendCards([g.p.findIndex(p => p.role === 'sauvage')]); }
-    if (g.p[i].role === 'chasseur') { g.hunterFrom = g.phase; g.phase = 'hunter'; g.hunterI = i; save(); return render(); }
-    if ((g.mayorIdx == null ? g.p[i].role === 'maire' : g.mayorIdx === i) && alive().length) { g.mayorFrom = g.phase; g.phase = 'mayor'; g.mayorI = i; save(); return render(); }
+    if (g.p[i].role === 'chasseur' && !g.powerless) { g.hunterFrom = g.phase; g.phase = 'hunter'; g.hunterI = i; save(); return render(); }
+    if (isMayor(i) && alive().length) { g.mayorFrom = g.phase; g.phase = 'mayor'; g.mayorI = i; save(); return render(); }
   }
   const w = winner(); if (w) { g.winner = w; g.phase = 'end'; save(); return render(); }
   g.phase = g.after === 'day' ? 'morning' : (g.dead.length || g.notes.length) ? 'verdict' : 'night';
@@ -284,7 +288,7 @@ function day() {
     <p class="lg-muted">Débattez, puis votez à main levée. Touchez le joueur éliminé.</p>
     ${dayNotes()}
     ${pick(alive(), 'lynch', null)}
-    <button class="lg-link" data-a="nolynch">${has('bouc') ? 'Égalité : le Bouc Émissaire est éliminé' : 'Égalité : personne n\u2019est éliminé'}</button>
+    <button class="lg-link" data-a="nolynch">${pw('bouc') ? 'Égalité : le Bouc Émissaire est éliminé' : 'Égalité : personne n\u2019est éliminé'}</button>
     ${statusHTML()}`;
 }
 function dayNotes() {
@@ -327,7 +331,7 @@ V.addEventListener('click', e => {
   if (a === 'cupi-ok') { g.lovers = g.tmp; g.tmp = null; const ns = steps(); g.step = ns.indexOf('cupidon') + 1; if (g.step >= ns.length) return endNight(); save(); return render(); }
   if (a === 'seer') { g.seen = i; save(); return render(); }
   if (a === 'wolf') { g.victim = i; save(); return render(); }
-  if (a === 'save') { g.saved = !g.saved; save(); return render(); }
+  if (a === 'save') { g.saved = g.saved === i ? null : i; save(); return render(); }
   if (a === 'poison') { g.poisoned = g.poisoned === i ? null : i; save(); return render(); }
   if (a === 'next') { const st = steps(); stepDone(st[g.step]); const cur = st[g.step]; const ns = steps(); g.step = ns.indexOf(cur) + 1; if (g.step >= ns.length) return endNight(); save(); return render(); }
   if (a === 'steal') { g.tmpSteal = g.tmpSteal === i ? null : i; save(); return render(); }
@@ -347,12 +351,14 @@ V.addEventListener('click', e => {
   if (a === 'pl-leave') { if (!confirm('Quitter la partie ?')) return; playerLeave(); return; }
   if (a === 'to-night') { g.phase = 'night'; g.night++; g.step = 0; save(); return render(); }
   if (a === 'to-day') { g.phase = 'day'; save(); return render(); }
-  if (a === 'shoot') { g.phase = g.hunterFrom === 'day' ? 'day' : 'night'; g.queue.unshift(i); g.hunterI = null; return resolveDeaths(); }
-  if (a === 'lynch') { if (!confirm('Éliminer ' + nameOf(i) + ' ?')) return; g.dead = []; g.notes = []; g.after = 'night';
-    if (roleOf(i) === 'idiot' && !g.idiotOut) { g.idiotOut = true; g.notes.push(nameOf(i) + ' est l\u2019Idiot du Village : il est épargné, mais ne votera plus.'); g.queue = []; }
-    else g.queue = [i];
+  if (a === 'shoot') { const h = g.hunterI; g.phase = g.hunterFrom === 'day' ? 'day' : 'night'; g.queue.unshift(i); g.vk = [...(g.vk || []), i]; g.hunterI = null;
+    if (isMayor(h)) { g.mayorFrom = g.phase; g.phase = 'mayor'; g.mayorI = h; save(); return render(); }   // le Chasseur était aussi Maire
+    return resolveDeaths(); }
+  if (a === 'lynch') { if (!confirm('Éliminer ' + nameOf(i) + ' ?')) return; g.dead = []; g.notes = []; g.vk = []; g.after = 'night';
+    if (roleOf(i) === 'idiot' && !g.idiotOut && !g.powerless) { g.idiotOut = true; g.notes.push(nameOf(i) + ' est l\u2019Idiot du Village : il est épargné, mais ne votera plus.'); g.queue = []; }
+    else { g.queue = [i]; g.vk = [i]; }
     g.ravenNext = null; return resolveDeaths(); }
-  if (a === 'nolynch') { g.dead = []; g.notes = []; const bk = g.p.findIndex(p => p.alive && p.role === 'bouc'); g.queue = bk >= 0 ? [bk] : []; if (bk < 0) g.notes.push('Égalité : personne n\u2019est éliminé.'); g.after = 'night'; g.ravenNext = null; return resolveDeaths(); }
+  if (a === 'nolynch') { g.dead = []; g.notes = []; const bk = g.powerless ? -1 : g.p.findIndex(p => p.alive && p.role === 'bouc'); g.queue = bk >= 0 ? [bk] : []; if (bk < 0) g.notes.push('Égalité : personne n\u2019est éliminé.'); g.after = 'night'; g.ravenNext = null; return resolveDeaths(); }
 });
 V.addEventListener('submit', e => {
   e.preventDefault();
