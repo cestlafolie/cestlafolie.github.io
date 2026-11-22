@@ -85,3 +85,58 @@ function tweenText(el, to, fmt, ms = 450) {
     x0 = null;
   });
 })();
+
+
+// ===== Canal temps réel partagé (ntfy.sh) =====
+// Deux connexions en parallèle (aucune coupure si l'une tombe), relance immédiate,
+// surveillance toutes les 0,5 s. Chaque message n'est traité qu'une fois (identifiant unique).
+function liveTopic(url, { onMessage, onStatus, onReady }) {
+  const seen = new Set(), links = [{}, {}];
+  let ready = false, readyT = null;
+  const isOpen = l => l.es && l.es.readyState === 1;
+  const status = () => onStatus && onStatus(links.some(isOpen) ? 'on' : navigator.onLine === false ? 'offline' : 'wait');
+  function open(l) {
+    if (l.es) l.es.close();
+    l.last = Date.now();
+    const es = l.es = new EventSource(url + '/sse?since=all');
+    const alive = () => { if (l.es === es) l.last = Date.now(); };
+    es.onopen = () => {
+      if (l.es !== es) return; l.fails = 0; alive(); status();
+      // « prêt » = l'historique a fini d'arriver (plus de message depuis 1,2 s)
+      if (!ready) { clearTimeout(readyT); readyT = setTimeout(() => { ready = true; onReady && onReady(); }, 1200); }
+    };
+    es.addEventListener('keepalive', alive);
+    es.onmessage = ev => {
+      alive();
+      let m; try { m = JSON.parse(ev.data); } catch { return; }
+      if (!m.id || seen.has(m.id)) return; seen.add(m.id);
+      if (!ready) { clearTimeout(readyT); readyT = setTimeout(() => { ready = true; onReady && onReady(); }, 1200); }
+      let d; try { d = JSON.parse(m.message); } catch { return; }
+      onMessage(d, m, ready);
+    };
+    es.onerror = () => {
+      if (l.es !== es) return;
+      es.close(); l.fails = (l.fails || 0) + 1;
+      l.retryAt = Date.now() + (l.fails === 1 ? 0 : Math.min(100 * 2 ** (l.fails - 2), 3000));
+      status();
+      if (l.fails === 1) open(l);
+    };
+  }
+  const all = force => links.forEach(l => { if (force || !isOpen(l)) { l.fails = 0; open(l); } });
+  setInterval(() => {
+    if (document.hidden) return;
+    const now = Date.now();
+    links.forEach(l => {
+      if (!l.es || (l.es.readyState === 2 && now >= (l.retryAt || 0))) open(l);
+      else if (l.es.readyState === 1 && now - l.last > 70000) open(l);
+    });
+  }, 500);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) all(false); });
+  addEventListener('online', () => all(true));
+  addEventListener('offline', status);
+  all(true);
+  return {
+    publish: obj => fetch(url, { method: 'POST', body: JSON.stringify(obj) }).then(r => { if (!r.ok) throw new Error(r.status); }),
+    isReady: () => ready,
+  };
+}

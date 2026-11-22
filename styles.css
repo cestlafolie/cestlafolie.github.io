@@ -279,3 +279,9 @@ html:has(body[data-tab="accueil"]){background:#0d1b3a}
 .r-cell.hot,.r-cell.hot i{transition:none}
 .roue .r-opts{margin-top:14px}
 .r-stage.running .r-cell,.r-stage.running .r-cell i{transition:opacity .3s}
+/* indicateur de partage en direct (tirage) */
+.r-sync{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;font:600 .78rem "Manrope",sans-serif;color:var(--r-dim)}
+.r-sync i{width:7px;height:7px;border-radius:50%;background:#ffb703;flex:none}
+.r-sync.on i{background:#06d6a0;box-shadow:0 0 0 0 rgba(6,214,160,.5);animation:rsync 2s infinite}
+.r-sync.offline i{background:#ff4d6d}
+@keyframes rsync{to{box-shadow:0 0 0 6px rgba(6,214,160,0)}}
