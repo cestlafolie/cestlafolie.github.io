@@ -2,7 +2,7 @@
 (() => {
 // ---------- personnages (paires proches pour l'Undercover) ----------
 const ANIME_PAIRS = {
-  'Naruto': [['Naruto','Sasuke'],['Kakashi','Gaï'],['Itachi','Madara'],['Sakura','Hinata'],['Jiraiya','Tsunade'],['Gaara','Kankuro'],['Minato','Hashirama'],['Shikamaru','Choji'],['Neji','Lee'],['Orochimaru','Kabuto'],['Madara','Hashirama'],['Tobirama','Minato'],['Obito','Shisui'],['Sai','Sasuke']],
+  'Naruto': [['Naruto','Sasuke'],['Kakashi','Gaï'],['Itachi','Madara'],['Sakura','Hinata'],['Jiraiya','Tsunade'],['Gaara','Kankuro'],['Minato','Hashirama'],['Shikamaru','Choji'],['Neji','Lee'],['Orochimaru','Kabuto'],['Madara','Hashirama'],['Tobirama','Minato'],['Obito','Shisui'],['Sai','Sasuke'],['Pain','Konan'],['Deidara','Sasori'],['Hidan','Kakuzu'],['Kisame','Zetsu'],['Minato','Kushina'],['Killer Bee','Naruto'],['Yamato','Kakashi']],
   'My Hero Academia': [['Deku','Bakugo'],['All Might','Endeavor'],['Todoroki','Dabi'],['Ochaco','Tsuyu'],['Shigaraki','All For One'],['Aizawa','Present Mic'],['Kirishima','Kaminari'],['Iida','Momo'],['Hawks','Mirko'],['Toga','Twice']],
   'Dragon Ball Z': [['Goku','Vegeta'],['Gohan','Trunks'],['Goten','Trunks enfant'],['Freezer','Cell'],['Piccolo','Dendé'],['Krilin','Yamcha'],['Boo','Babidi'],['Bulma','Chichi'],['Gogeta','Vegeto'],['Tortue Géniale','Kaïo']],
   'One Piece': [['Luffy','Ace'],['Zoro','Sanji'],['Nami','Robin'],['Shanks','Barbe Blanche'],['Usopp','Chopper'],['Law','Kidd'],['Franky','Brook'],['Kaido','Big Mom'],['Garp','Sengoku'],['Mihawk','Crocodile']],
@@ -14,6 +14,7 @@ const COLORS = { 'Naruto': '#ff7a00', 'My Hero Academia': '#2ec27e', 'Dragon Bal
 // images de personnages fournies (fichiers dans img/anime/) ; les autres gardent leur badge à initiales
 const PHOTOS = {
   'Naruto': 'naruto.jpg', 'Sasuke': 'sasuke.jpg', 'Sakura': 'sakura.jpg', 'Kakashi': 'kakashi.jpg', 'Itachi': 'itachi.jpg', 'Gaara': 'gaara.jpg', 'Hinata': 'hinata.jpg', 'Shikamaru': 'shikamaru.jpg', 'Jiraiya': 'jiraiya.jpg', 'Tsunade': 'tsunade.jpg', 'Madara': 'madara.jpg', 'Obito': 'obito.jpg', 'Shisui': 'shisui.jpg', 'Hashirama': 'hashirama.jpg', 'Tobirama': 'tobirama.jpg', 'Sai': 'sai.jpg',
+  'Pain': 'pain.jpg', 'Konan': 'konan.jpg', 'Kisame': 'kisame.jpg', 'Deidara': 'deidara.jpg', 'Sasori': 'sasori.jpg', 'Hidan': 'hidan.jpg', 'Kakuzu': 'kakuzu.jpg', 'Zetsu': 'zetsu.jpg', 'Orochimaru': 'orochimaru.jpg', 'Kabuto': 'kabuto.jpg', 'Minato': 'minato.jpg', 'Kushina': 'kushina.jpg', 'Killer Bee': 'killerbee.jpg', 'Yamato': 'yamato.jpg',
 };
 const animeOf = name => Object.keys(ANIME_PAIRS).find(a => ANIME_PAIRS[a].some(p => p.includes(name)));
 const initials = n => n.split(/[\s-]+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
