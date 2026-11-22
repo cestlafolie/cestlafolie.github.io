@@ -606,3 +606,30 @@ body[data-tab="lg"] .burger span{background:#e8ecf8}
 .h-lg .h-desc{font-family:"Manrope",sans-serif;font-weight:600;color:#b8c2de;opacity:1}
 .h-lg .h-go{background:#ffcf3f;color:#0a0f1f;font-family:"Manrope",sans-serif;text-transform:none;letter-spacing:.02em;font-size:.88rem}
 .h-lg-moon{width:40px;height:40px;border-radius:50%;box-shadow:-10px 7px 0 0 #ffcf3f;margin:0 0 6px 10px}
+/* Loup-Garou : modes et version en ligne */
+.lg-mode{display:block;width:100%;text-align:left;margin-top:12px;padding:16px;border-radius:18px;background:linear-gradient(160deg,#2a3a6b,#141d3b);border:1px solid var(--line);color:#e8ecf8}
+.lg-mode b{display:block;font:400 1.2rem "Archivo Black",sans-serif}
+.lg-mode span{display:block;margin-top:4px;color:#b8c2de;font-weight:600;font-size:.9rem;line-height:1.4}
+.lg-mode:active{transform:scale(.98)}
+.lg-mode-alt{background:var(--card)}
+.lg-back{font-weight:700;font-size:.9rem;color:var(--dim);padding:6px 0}
+.lg-net{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.8rem;color:var(--dim);margin:4px 0 10px}
+.lg-net i{width:8px;height:8px;border-radius:50%;background:#f0a500}.lg-net.on i{background:#3ddc97}.lg-net.offline i{background:#e5383b}
+.lg-code{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:14px 16px;border-radius:18px;background:var(--moon);color:#0a0f1f}
+.lg-code span{flex-basis:100%;font:800 .72rem "Manrope",sans-serif;text-transform:uppercase;letter-spacing:.1em}
+.lg-code b{font:400 2rem "Archivo Black",sans-serif;letter-spacing:.18em}
+.lg-code button{margin-left:auto;height:44px;padding:0 16px;border-radius:12px;background:#0a0f1f;color:#fff;font-weight:800}
+.lg-chip-on{padding-right:14px;border-color:rgba(61,220,151,.5)}
+.lg-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:6px}
+.lg-mini{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;border-radius:14px;border:1px solid var(--line);text-align:center}
+.lg-mini .lg-ico{width:40px;height:40px}
+.lg-mini b{font-weight:800;font-size:.98rem;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lg-mini span{font-size:.8rem;font-weight:700;color:#cdd4ea}
+.lg-form{display:flex;flex-direction:column;gap:10px}
+.lg-form input{-webkit-user-select:text;user-select:text;height:52px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:#e8ecf8;padding:0 14px;font:700 16px "Manrope",sans-serif}
+.lg-form input:focus{outline:none;border-color:var(--moon)}
+.lg-code-in{text-align:center;letter-spacing:.4em;text-transform:uppercase;font:400 1.6rem "Archivo Black",sans-serif!important}
+.lg-cardbtn{display:block;width:100%;margin-top:14px;color:#e8ecf8;text-align:center}
+.lg-cardbtn>span{display:block;margin-top:10px;color:var(--dim);font-weight:700;font-size:.85rem}
+.lg-back-card{padding:40px 16px;border-radius:22px;background:repeating-linear-gradient(45deg,#1b2550 0 12px,#151d40 12px 24px);border:2px solid rgba(255,207,63,.4)}
+.lg-back-card b{display:block;margin-top:8px;font:400 1.5rem "Archivo Black",sans-serif}
