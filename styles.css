@@ -401,3 +401,92 @@ body[data-tab="mw"] .burger span{background:#15130f}
 .tab-ico.mwi b{width:12px;height:12px;border-radius:3px;background:var(--night-line)}
 .tab.active .tab-ico.mwi b{background:#f4f1ea}
 .mw-secret summary .c{display:none}.mw-secret[open] summary .o{display:none}.mw-secret[open] summary .c{display:inline}
+/* personnages des rôles */
+.mw-pic{display:block;width:96px;height:96px;margin:0 auto 10px;filter:drop-shadow(3px 3px 0 rgba(0,0,0,.25))}
+.mw-pic.sm{width:58px;height:58px;margin-bottom:6px}
+.mw-pic.xs{width:30px;height:30px;margin:0;filter:none;flex:none}
+.mw-reveal .mw-pic,.mw-end .mw-pic{animation:mwpop .5s cubic-bezier(.3,1.6,.5,1)}
+.mw-roles li{justify-content:flex-start}.mw-roles li span{flex:1}
+.mw-rolepics{display:flex;justify-content:center;gap:10px;margin-top:12px}
+.mw-rolepics .mw-pic{width:64px;height:64px;margin:0}
+
+/* ===== Anime : sombre, vif, moderne ===== */
+body[data-tab="anime"]{background:radial-gradient(120% 70% at 50% -10%,#3b1f6e 0%,#14102a 55%,#0b0918 100%);color:#f5f3ff}
+html:has(body[data-tab="anime"]){background:#0b0918}
+body[data-tab="anime"] .top-title{font:400 1.15rem "Archivo Black",sans-serif;letter-spacing:-.01em;text-transform:none;color:#f5f3ff}
+body[data-tab="anime"] .burger span{background:#f5f3ff}
+.anime{color:#f5f3ff}
+.an-subs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);margin-bottom:16px}
+.an-sub{height:42px;border-radius:10px;font:800 .95rem "Manrope",sans-serif;color:#b9b3d9;transition:background .2s,color .2s}
+.an-sub.on{background:#f5f3ff;color:#14102a}
+.anime[data-sub="quiz"] .an-pane-uc,.anime[data-sub="uc"] .an-pane-quiz{display:none}
+.an-k{font:800 .74rem "Manrope",sans-serif;text-transform:uppercase;letter-spacing:.14em;color:#b9b3d9;margin:4px 0 10px}
+.an-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.an-tile{position:relative;overflow:hidden;min-height:108px;padding:14px;border-radius:18px;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;gap:4px;background:linear-gradient(150deg,var(--ac),color-mix(in srgb,var(--ac) 40%,#14102a));box-shadow:0 10px 24px color-mix(in srgb,var(--ac) 30%,transparent);transition:transform .15s}
+.an-tile::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 80% 15%,rgba(255,255,255,.35) 0 2px,transparent 3px) 0 0/14px 14px;opacity:.5}
+.an-tile:active{transform:scale(.96)}
+.an-tile-n{position:relative;font:400 1.08rem/1.1 "Archivo Black",sans-serif;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.2)}
+.an-tile-s{position:relative;font:700 .78rem "Manrope",sans-serif;color:rgba(255,255,255,.85)}
+.an-tile:last-child:nth-child(odd){grid-column:1/-1;min-height:84px}
+.an-top{display:flex;align-items:center;gap:12px;margin-bottom:14px;font:800 .85rem "Manrope",sans-serif;color:#b9b3d9}
+.an-x{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.1);font-size:1.3rem;color:#f5f3ff}
+.an-bar{flex:1;height:10px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
+.an-bar i{display:block;height:100%;border-radius:99px;background:var(--ac);transition:width .4s var(--ease)}
+.an-question{font:400 clamp(1.3rem,6vw,1.6rem)/1.25 "Archivo Black",sans-serif;margin:0 0 18px}
+.an-opts{display:flex;flex-direction:column;gap:10px}
+.an-opt{min-height:56px;padding:12px 16px;border-radius:14px;text-align:left;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.14);color:#f5f3ff;font:700 1rem "Manrope",sans-serif;transition:background .2s,border-color .2s,transform .12s}
+.an-opt:active:not(:disabled){transform:scale(.98)}
+.an-opt.good{background:#2ec27e;border-color:#2ec27e;color:#04150c;animation:mwpop .35s}
+.an-opt.bad{background:#e5383b;border-color:#e5383b;color:#fff;animation:anshake .35s}
+.an-opt:disabled:not(.good):not(.bad){opacity:.45}
+@keyframes anshake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.an-next,.an-big{display:block;width:100%;height:56px;margin-top:16px;border-radius:16px;background:#f5f3ff;color:#14102a;font:400 1.05rem "Archivo Black",sans-serif;box-shadow:0 10px 24px rgba(0,0,0,.35)}
+.an-next:active,.an-big:active{transform:scale(.98)}
+.an-link{display:block;margin:12px auto 0;padding:10px;font:700 .9rem "Manrope",sans-serif;color:#b9b3d9;text-decoration:underline;text-underline-offset:3px}
+.an-score{text-align:center;padding:30px 16px;border-radius:22px;background:linear-gradient(150deg,var(--ac),color-mix(in srgb,var(--ac) 35%,#14102a));animation:mwpop .5s cubic-bezier(.3,1.6,.5,1)}
+.an-score .an-k{color:rgba(255,255,255,.85)}
+.an-score b{display:block;font:400 4.2rem/1 "Archivo Black",sans-serif;color:#fff}
+.an-score b small{font-size:1.6rem;opacity:.75}
+.an-score p{font:700 1rem "Manrope",sans-serif;margin-top:8px;color:#fff}
+/* Undercover anime : reprend le moteur de Mystère White, habillé en sombre */
+.anime .mw-hero .mw-title span{background:linear-gradient(90deg,#ff7a00,#e5383b,#5b5fef);color:#fff}
+.anime .mw-lead,.anime .mw-muted,.anime .mw-back,.anime .mw-link,.anime .mw-kicker{color:#b9b3d9}
+.anime .mw-h{color:#f5f3ff}.anime .mw-h em{background:#f5f3ff;color:#14102a}
+.anime .mw-card,.anime .mw-go,.anime .mw-box,.anime .mw-rules,.anime .mw-word,.anime .mw-pass,.anime .mw-reveal,.anime .mw-end,.anime .mw-codebox{--ink:#f5f3ff;border-color:rgba(255,255,255,.18);box-shadow:0 10px 26px rgba(0,0,0,.35)}
+.anime .mw-box,.anime .mw-rules,.anime .mw-word{background:rgba(255,255,255,.07);color:#f5f3ff;border-width:1.5px}
+.anime .mw-rules p,.anime .mw-card span{color:inherit;opacity:.85}
+.anime .mw-label,.anime .mw-word span,.anime .mw-word em{color:#b9b3d9}
+.anime .mw-yellow{background:linear-gradient(150deg,#ff7a00,#e5383b);color:#fff}
+.anime .mw-mint{background:linear-gradient(150deg,#5b5fef,#2a9d8f);color:#fff}
+.anime .mw-card span{color:#fff}
+.anime .mw-go{background:#f5f3ff;color:#14102a;border:none}
+.anime .mw-go.mw-dark{background:linear-gradient(90deg,#ff7a00,#e5383b);color:#fff}
+.anime .mw-add input,.anime .mw-form input{background:rgba(0,0,0,.25);color:#f5f3ff;border:1.5px solid rgba(255,255,255,.2)}
+.anime .mw-add button{background:#f5f3ff;color:#14102a;border:none;box-shadow:none}
+.anime .mw-chip,.anime .mw-cat,.anime .mw-step button,.anime .mw-pick button{background:rgba(255,255,255,.07);color:#f5f3ff;border:1.5px solid rgba(255,255,255,.2)}
+.anime .mw-chip button{color:#b9b3d9}
+.anime .mw-chip.me,.anime .mw-cat.on{background:#f5f3ff;color:#14102a}
+.anime .mw-pick button.on{background:#e5383b;border-color:#e5383b}
+.anime .mw-order li::before{background:#f5f3ff;color:#14102a}
+.anime .mw-roles li{border-color:rgba(255,255,255,.2)}
+.anime .mw-roles li.mw-r-under{background:rgba(229,56,59,.25)}.anime .mw-roles li.mw-r-white{background:#f5f3ff;color:#14102a}
+.anime .mw-secret summary{background:linear-gradient(90deg,#ff7a00,#e5383b);color:#fff;border:none;box-shadow:0 10px 24px rgba(0,0,0,.35)}
+.anime .mw-secret[open] summary{background:rgba(255,255,255,.1);color:#f5f3ff}
+.anime .mw-codebox{background:linear-gradient(150deg,#ff7a00,#e5383b);color:#fff}
+.anime .mw-share{background:#14102a;border:none}
+.anime .mw-pass{background:linear-gradient(150deg,#5b5fef,#3b1f6e)}
+.anime .mw-note{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.3);color:#f5f3ff}
+.anime .mw-word.mw-white{background:#f5f3ff;color:#14102a}
+.anime .mw-words span{color:#b9b3d9}
+.an-avatar{width:96px;height:96px;margin:0 auto 12px;border-radius:50%;display:grid;place-items:center;align-content:center;gap:2px;background:radial-gradient(circle at 30% 25%,color-mix(in srgb,var(--ac) 60%,#fff),var(--ac) 60%,color-mix(in srgb,var(--ac) 60%,#000));box-shadow:0 0 0 4px rgba(255,255,255,.15),0 0 30px color-mix(in srgb,var(--ac) 60%,transparent)}
+.an-avatar i{font:400 2rem/1 "Archivo Black",sans-serif;font-style:normal;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.mw-word .an-avatar em,.an-avatar em{display:block;font:800 .52rem "Manrope",sans-serif;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.9);max-width:80px;text-align:center;line-height:1.1}
+/* accueil + menu */
+.h-anime{background:linear-gradient(150deg,#3b1f6e,#14102a);color:#f5f3ff;border:1px solid rgba(255,255,255,.12);box-shadow:0 14px 30px rgba(0,0,0,.4);transform:rotate(.6deg)}
+.h-anime:active{transform:rotate(0) scale(.97)}
+.h-anime .h-name{font:400 1.5rem "Archivo Black",sans-serif}
+.h-anime .h-desc{font-family:"Manrope",sans-serif;font-weight:600;color:#cfc9ef;opacity:1}
+.h-anime .h-go{background:linear-gradient(90deg,#ff7a00,#e5383b);color:#fff;font-family:"Manrope",sans-serif;text-transform:none;letter-spacing:.02em;font-size:.88rem}
+.h-anime-ico{font:800 .95rem "Manrope",sans-serif;background:linear-gradient(90deg,#ff7a00,#e5383b,#5b5fef);color:#fff;border-radius:10px;padding:6px 10px;margin-bottom:4px}
+.tab-ico.ani b{width:12px;height:12px;border-radius:50%;background:var(--night-line)}
+.tab.active .tab-ico.ani b{background:conic-gradient(#ff7a00,#e5383b,#5b5fef,#ff7a00)}

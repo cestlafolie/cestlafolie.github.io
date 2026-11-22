@@ -30,6 +30,7 @@
     <button class="tab" data-tab="vote"><i class="tab-ico"><b></b><b></b></i>Vote secret H</button>
     <button class="tab" data-tab="roue"><i class="tab-ico wheel"><b></b></i>Tirage au sort</button>
     <button class="tab" data-tab="mw"><i class="tab-ico mwi"><b></b></i>Mystère White</button>
+    <button class="tab" data-tab="anime"><i class="tab-ico ani"><b></b></i>Anime</button>
   </nav>
   <p class="sidenav-foot">document confidentiel</p>
 </aside>
@@ -68,6 +69,12 @@
         <span class="h-mw-ico" aria-hidden="true">?</span>
         <span class="h-name">Mystère White</span>
         <span class="h-desc">Tout le monde a le même mot, sauf l’intrus. Sur un seul téléphone ou chacun le sien.</span>
+        <span class="h-go">Ouvrir</span>
+      </button>
+      <button class="h-card h-anime" data-go="anime">
+        <span class="h-anime-ico" aria-hidden="true">アニメ</span>
+        <span class="h-name">Anime</span>
+        <span class="h-desc">Undercover avec les personnages de Naruto, My Hero Academia, Dragon Ball Z… et un quiz sur chaque anime.</span>
         <span class="h-go">Ouvrir</span>
       </button>
       <div class="h-card h-soon">
@@ -162,6 +169,16 @@
     <div id="mwView"></div>
   </section>
 
+  <!-- ===== Module : Anime (Undercover + quiz) ===== -->
+  <section class="module mw anime" id="mod-anime" data-title="Anime">
+    <div class="an-subs" role="tablist">
+      <button class="an-sub" data-sub="quiz">Quiz</button>
+      <button class="an-sub" data-sub="uc">Undercover</button>
+    </div>
+    <div class="an-pane an-pane-quiz" id="anQuiz"></div>
+    <div class="an-pane an-pane-uc" id="anUc"></div>
+  </section>
+
 </main>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -169,5 +186,6 @@
 <script src="vote.js"></script>
 <script src="roue.js"></script>
 <script src="mw.js"></script>
+<script src="anime.js"></script>
 </body>
 </html>

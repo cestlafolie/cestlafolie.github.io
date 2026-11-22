@@ -6,11 +6,7 @@
 //    Les messages passent par ntfy.sh. Chaque mot est chiffré pour son seul destinataire (ECDH + AES-GCM) :
 //    personne ne peut lire le mot des autres, même en fouillant le code de la page.
 // Le hasard vient de crypto.getRandomValues.
-(() => {
-const ROOT = $('mwView');
-
-// ---------- mots (paires originales) ----------
-const PAIRS = {
+const MW_PAIRS = {
   'Nourriture': [['Café','Thé'],['Pizza','Quiche'],['Croissant','Pain au chocolat'],['Pomme','Poire'],['Chocolat','Caramel'],['Burger','Sandwich'],['Fromage','Beurre'],['Sushi','Maki'],['Crêpe','Gaufre'],['Pâtes','Riz'],['Glace','Sorbet'],['Orange','Clémentine'],['Ketchup','Mayonnaise'],['Miel','Confiture'],['Frites','Chips'],['Soupe','Bouillon'],['Tacos','Kebab'],['Fraise','Framboise'],['Lait','Yaourt'],['Citron','Pamplemousse']],
   'Animaux': [['Chat','Tigre'],['Chien','Loup'],['Lion','Panthère'],['Dauphin','Requin'],['Abeille','Guêpe'],['Cheval','Âne'],['Aigle','Faucon'],['Grenouille','Crapaud'],['Lapin','Lièvre'],['Papillon','Libellule'],['Crocodile','Lézard'],['Pingouin','Phoque'],['Hibou','Chouette'],['Souris','Rat'],['Mouton','Chèvre'],['Vache','Buffle'],['Escargot','Limace'],['Perroquet','Toucan'],['Poule','Canard'],['Ours','Panda']],
   'Lieux': [['Plage','Piscine'],['Cinéma','Théâtre'],['Hôpital','Pharmacie'],['École','Université'],['Montagne','Colline'],['Forêt','Jungle'],['Aéroport','Gare'],['Restaurant','Cantine'],['Musée','Galerie'],['Bibliothèque','Librairie'],['Supermarché','Marché'],['Désert','Savane'],['Prison','Commissariat'],['Stade','Gymnase'],['Hôtel','Camping'],['Château','Palais'],['Boulangerie','Pâtisserie'],['Parc','Jardin'],['Métro','Tramway'],['Discothèque','Bar']],
@@ -19,6 +15,15 @@ const PAIRS = {
   'Loisirs': [['Football','Rugby'],['Tennis','Badminton'],['Ski','Snowboard'],['Guitare','Violon'],['Piano','Batterie'],['Échecs','Dames'],['Netflix','YouTube'],['Karaoké','Concert'],['Vélo','Trottinette'],['Natation','Plongée'],['Boxe','Judo'],['Bowling','Billard'],['Poker','Blackjack'],['Danse','Gymnastique'],['Camping','Randonnée'],['Jeux vidéo','Jeux de société'],['Surf','Skate'],['Photo','Vidéo'],['Pêche','Chasse'],['Golf','Mini-golf']],
   'Divers': [['Été','Printemps'],['Soleil','Lune'],['Pluie','Neige'],['Anniversaire','Mariage'],['Noël','Nouvel An'],['Roi','Prince'],['Vampire','Zombie'],['Fantôme','Squelette'],['Sorcière','Fée'],['Pirate','Viking'],['Mer','Océan'],['Instagram','TikTok'],['Paris','Londres'],['Voiture','Moto'],['Avion','Hélicoptère'],['Bateau','Sous-marin'],['Rêve','Cauchemar'],['Amour','Amitié'],['Matin','Soir'],['Tempête','Orage']],
 };
+
+// La fabrique createUndercover() permet de lancer ce jeu plusieurs fois avec des mots différents
+// (Mystère White classique, Undercover spécial anime…). Chaque instance a ses propres données.
+function createUndercover(CFG) {
+const ROOT = CFG.root;
+const K = CFG.key;   // préfixe des données enregistrées et des canaux
+
+// ---------- mots (paires originales) ----------
+const PAIRS = CFG.pairs;
 const CATS = Object.keys(PAIRS);
 
 // ---------- outils ----------
@@ -32,6 +37,7 @@ const store = {
   del: k => { try { localStorage.removeItem(k); } catch {} },
 };
 const ROLE = { civil: 'Civil', under: 'Undercover', white: 'Mister White' };
+const rolePic = (role, cls = '') => `<img class="mw-pic ${cls}" src="img/role-${role}.svg" alt="">`;
 const PLURAL = { civil: 'Civils', under: 'Undercover', white: 'Mister White' };
 
 // réglages par défaut selon le nombre de joueurs
@@ -60,13 +66,13 @@ function winner(roles, alive) {
 const wordOf = (role, civil, under) => role === 'civil' ? civil : role === 'under' ? under : null;
 
 // ---------- écran d'accueil du jeu ----------
-let mode = store.get('mw_mode', null);   // 'local' | 'online' | null
+let mode = store.get(K + '_mode', null);   // 'local' | 'online' | null
 function home() {
   ROOT.innerHTML = `
-    <div class="mw-hero">
+    ${CFG.hero || `<div class="mw-hero">
       <h2 class="mw-title">Mystère<br><span>White</span></h2>
       <p class="mw-lead">Tout le monde a le même mot… sauf l’intrus. Trouve-le avant qu’il ne vous trouve.</p>
-    </div>
+    </div>`}
     <div class="mw-modes">
       <button class="mw-card mw-yellow" data-act="mode-local"><b>Un seul téléphone</b><span>On se le passe pour découvrir son mot en secret.</span></button>
       <button class="mw-card mw-mint" data-act="mode-online"><b>Un téléphone par joueur</b><span>Une partie avec un code, chacun sur son téléphone.</span></button>
@@ -75,7 +81,7 @@ function home() {
 }
 function rulesHTML() {
   return `<details class="mw-rules"><summary>Les règles</summary>
-    <p><b>Civils</b> : ils ont tous le même mot. <b>Undercover</b> : ils ont un mot proche, sans savoir qu’ils sont l’intrus. <b>Mister White</b> : il n’a aucun mot et doit bluffer.</p>
+    <div class="mw-rolepics">${rolePic('civil')}${rolePic('under')}${rolePic('white')}</div><p><b>Civils</b> : ils ont tous le même mot. <b>Undercover</b> : ils ont un mot proche, sans savoir qu’ils sont l’intrus. <b>Mister White</b> : il n’a aucun mot et doit bluffer.</p>
     <p>Chacun à son tour dit <b>un mot ou une courte phrase</b> sur son mot, sans être trop évident. Puis tout le monde vote pour éliminer quelqu’un, qui révèle son rôle.</p>
     <p>Les <b>Civils</b> gagnent s’ils éliminent tous les intrus. Les <b>intrus</b> gagnent s’il ne reste plus qu’un Civil. Si <b>Mister White</b> est éliminé, il peut encore gagner en devinant le mot des Civils.</p></details>`;
 }
@@ -84,8 +90,8 @@ function backBtn(label = 'Changer de mode') { return `<button class="mw-back" da
 // =====================================================================
 // MODE 1 : UN SEUL TÉLÉPHONE
 // =====================================================================
-let L = store.get('mw_local', null) || { players: [], nU: 1, nW: 0, cats: [], game: null };
-const saveL = () => store.set('mw_local', L);
+let L = store.get(K + '_local', null) || { players: [], nU: 1, nW: 0, cats: [], game: null };
+const saveL = () => store.set(K + '_local', L);
 
 function localRender() {
   const g = L.game;
@@ -132,14 +138,15 @@ function localDeal() {
       <button class="mw-link" data-act="l-quit">Arrêter la partie</button>`;
   } else {
     const w = wordOf(p.role, g.civil, g.under);
-    ROOT.innerHTML = `<p class="mw-kicker">${esc(p.name)}, ton mot secret</p>
+    ROOT.innerHTML = `<p class="mw-kicker">${esc(p.name)}, ${CFG.wordLabel ? 'ton personnage secret' : 'ton mot secret'}</p>
       ${wordCard(w)}
       <button class="mw-go" data-act="l-hide">J’ai retenu, cacher</button>`;
   }
 }
 function wordCard(w) {
-  return w ? `<div class="mw-word"><span>Ton mot</span><b>${esc(w)}</b><em>Ne le montre à personne</em></div>`
-           : `<div class="mw-word mw-white"><span>Tu es</span><b>Mister White</b><em>Tu n’as pas de mot : écoute les autres et bluffe.</em></div>`;
+  const pic = CFG.picture ? CFG.picture(w) : '';
+  return w ? `<div class="mw-word">${pic}<span>${CFG.wordLabel || 'Ton mot'}</span><b>${esc(w)}</b><em>Ne le montre à personne</em></div>`
+           : `<div class="mw-word mw-white">${pic}<span>Tu es</span><b>Mister White</b><em>Tu n’as pas de mot : écoute les autres et bluffe.</em></div>`;
 }
 function orderHTML(names, alive, title) {
   return `<div class="mw-box"><p class="mw-label">${title}</p><ol class="mw-order">${names.map((n, k) => `<li class="${alive[k] ? '' : 'out'}">${esc(n)}</li>`).join('')}</ol></div>`;
@@ -162,12 +169,12 @@ function localVote() {
 function localReveal() {
   const g = L.game, p = g.players[g.lastOut];
   if (p.role === 'white' && g.guess === null) {
-    ROOT.innerHTML = `<div class="mw-reveal mw-white-bg"><span>${esc(p.name)} était</span><b>Mister White</b></div>
+    ROOT.innerHTML = `<div class="mw-reveal mw-white-bg">${rolePic('white')}<span>${esc(p.name)} était</span><b>Mister White</b></div>
       <p class="mw-muted">Dernière chance : ${esc(p.name)} essaie de deviner le mot des Civils.</p>
       <form class="mw-add" data-form="lguess" autocomplete="off"><input name="g" maxlength="30" placeholder="Le mot des Civils" enterkeyhint="done"><button>Valider</button></form>`;
     return;
   }
-  ROOT.innerHTML = `<div class="mw-reveal mw-${p.role}"><span>${esc(p.name)} était</span><b>${ROLE[p.role]}</b></div>
+  ROOT.innerHTML = `<div class="mw-reveal mw-${p.role}">${rolePic(p.role)}<span>${esc(p.name)} était</span><b>${ROLE[p.role]}</b></div>
     ${p.role === 'white' ? `<p class="mw-muted">Il a proposé « ${esc(g.guess)} » : raté !</p>` : ''}
     <button class="mw-go" data-act="l-next">Continuer</button>`;
 }
@@ -189,9 +196,9 @@ function localGuess(text) {
 function endScreen(players, civil, under, win, guess, isLocal, canReplay = true) {
   const title = win === 'civils' ? 'Les Civils gagnent' : win === 'white' ? 'Mister White gagne' : 'Les intrus gagnent';
   const sub = win === 'white' ? `Il a deviné le mot « ${esc(civil)} ».` : win === 'civils' ? 'Tous les intrus ont été démasqués.' : 'Il ne reste plus qu’un Civil.';
-  ROOT.innerHTML = `<div class="mw-end mw-end-${win}"><span>Fin de partie</span><b>${title}</b><em>${sub}</em></div>
+  ROOT.innerHTML = `<div class="mw-end mw-end-${win}">${rolePic(win === 'civils' ? 'civil' : win === 'white' ? 'white' : 'under')}<span>Fin de partie</span><b>${title}</b><em>${sub}</em></div>
     <div class="mw-box mw-words"><div><span>Civils</span><b>${esc(civil)}</b></div><div><span>Undercover</span><b>${esc(under)}</b></div></div>
-    <div class="mw-box"><p class="mw-label">Les rôles</p><ul class="mw-roles">${players.map(p => `<li class="mw-r-${p.role}${p.alive ? '' : ' out'}"><span>${esc(p.name)}</span><b>${ROLE[p.role]}</b></li>`).join('')}</ul></div>
+    <div class="mw-box"><p class="mw-label">Les rôles</p><ul class="mw-roles">${players.map(p => `<li class="mw-r-${p.role}${p.alive ? '' : ' out'}">${rolePic(p.role, 'xs')}<span>${esc(p.name)}</span><b>${ROLE[p.role]}</b></li>`).join('')}</ul></div>
     ${canReplay ? `<button class="mw-go" data-act="${isLocal ? 'l-replay' : 'o-replay'}">Rejouer</button>` : `<p class="mw-muted mw-center">L’hôte peut relancer une partie.</p>`}
     <button class="mw-link" data-act="${isLocal ? 'l-edit' : 'o-lobby'}">${isLocal ? 'Modifier les joueurs' : canReplay ? 'Retour au salon' : ''}</button>`;
   if (!isLocal && !canReplay) ROOT.querySelector('.mw-link').remove();
@@ -214,8 +221,7 @@ function confettiBurst() {
 // =====================================================================
 // MODE 2 : UN TÉLÉPHONE PAR JOUEUR
 // =====================================================================
-const SALT = 'q7x2k9';
-const topicOf = code => 'https://ntfy.sh/cestlafolie-mw-' + code.toLowerCase() + '-' + SALT;
+const topicOf = code => 'https://ntfy.sh/cestlafolie-' + K + '-' + code.toLowerCase() + '-' + CFG.salt;
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
 const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
@@ -245,7 +251,7 @@ async function open_(privJwk, pubB64, box) {
 }
 
 function freshState() { return { players: [], cfg: { nU: 1, nW: 0, cats: [] }, phase: 'lobby', gid: null, order: [], alive: {}, r: 0, votes: {}, mine: null, last: null, end: null, guessSent: false, hostPub: null }; }
-const roomKey = code => 'mw_room_' + code;
+const roomKey = code => K + '_room_' + code;
 const send = obj => chan ? chan.publish(Object.assign({ gid: O && O.gid }, obj)).catch(() => toast('Pas de connexion, réessaie')) : null;
 
 function connect(code) {
@@ -337,7 +343,8 @@ const nameOf = pid => (O.names && O.names[pid]) || (O.players.find(p => p.pid ==
 function netHTML() { const s = O.net || 'wait'; return `<p class="mw-net ${s}"><i></i><span>${s === 'on' ? 'Connecté' : s === 'offline' ? 'Hors ligne' : 'Connexion…'}</span></p>`; }
 
 function onlineEntry() {
-  const code = (decodeURIComponent(location.hash).split('/')[1] || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
+  const hp = decodeURIComponent(location.hash.slice(1)).split('/');
+  const code = hp[0] === CFG.tab ? (hp[1] || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4) : '';
   const lastName = store.get('mw_name', '');
   ROOT.innerHTML = `${backBtn()}
     <div class="mw-box">
@@ -366,8 +373,8 @@ async function enterRoom(code, name, host) {
   if (!r || !r.priv) { const k = await genKeys(); r = { pid: rnd(1e9).toString(36) + rnd(1e9).toString(36), priv: k.priv, pub: k.pub }; }
   r.name = name; r.host = host || !!r.host; store.set(roomKey(code), r);
   me = Object.assign({ code }, r);
-  store.set('mw_cur', code);
-  if (location.hash.startsWith('#mw')) history.replaceState(null, '', '#mw/' + code);
+  store.set(K + '_cur', code);
+  if (location.hash.slice(1).split('/')[0] === CFG.tab) history.replaceState(null, '', '#' + CFG.tab + '/' + code);
   connect(code);
   onlineRender();
   if (O.ready) ensureJoined();
@@ -377,7 +384,7 @@ async function enterRoom(code, name, host) {
 function leaveRoom() {
   if (chan && me) chan.publish({ k: 'leave', pid: me.pid }).catch(() => {});
   if (chan) chan.close(); chan = null; O = null; me = null;
-  store.del('mw_cur'); history.replaceState(null, '', '#mw');
+  store.del(K + '_cur'); if (location.hash.slice(1).split('/')[0] === CFG.tab) history.replaceState(null, '', '#' + CFG.tab);
   render();
 }
 
@@ -407,7 +414,7 @@ function onlineRender_() {
 }
 function leaveBtn() { return `<button class="mw-link" data-act="o-leave">Quitter la partie</button>`; }
 function lobby() {
-  const n = O.players.length, url = location.origin + location.pathname + '#mw/' + me.code;
+  const n = O.players.length, url = location.origin + location.pathname + '#' + CFG.tab + '/' + me.code;
   ROOT.innerHTML = `${netHTML()}
     <div class="mw-codebox"><span>Code de la partie</span><b>${esc(me.code)}</b>
       <button class="mw-share" data-act="o-share" data-url="${esc(url)}">Inviter</button></div>
@@ -425,10 +432,10 @@ function game() {
     if (O.last.tie) top = `<div class="mw-note">Égalité au vote : on revote.</div>`;
     else if (O.last.role) {
       const extra = O.last.role === 'white' ? (O.phase === 'guess' ? ' — il tente de deviner le mot…' : O.last.ok === false ? ` — il a proposé « ${esc(O.last.guess)} » : raté !` : '') : '';
-      top = `<div class="mw-reveal mw-${O.last.role} mw-small"><span>${esc(nameOf(O.last.out))} était</span><b>${ROLE[O.last.role]}</b><em>${extra}</em></div>`;
+      top = `<div class="mw-reveal mw-${O.last.role} mw-small">${rolePic(O.last.role, 'sm')}<span>${esc(nameOf(O.last.out))} était</span><b>${ROLE[O.last.role]}</b><em>${extra}</em></div>`;
     }
   }
-  const mine = O.mine ? (O.mine.err ? `<div class="mw-note">Impossible de lire ton mot. Quitte et rejoins la partie.</div>` : `<details class="mw-secret"><summary><span class="o">Toucher pour voir mon mot</span><span class="c">Cacher mon mot</span></summary>${wordCard(O.mine.word)}</details>`) : `<p class="mw-muted mw-center">Réception de ton mot…</p>`;
+  const mine = O.mine ? (O.mine.err ? `<div class="mw-note">Impossible de lire ton mot. Quitte et rejoins la partie.</div>` : `<details class="mw-secret"><summary><span class="o">Toucher pour voir ${CFG.wordLabel ? 'mon personnage' : 'mon mot'}</span><span class="c">Cacher mon mot</span></summary>${wordCard(O.mine.word)}</details>`) : `<p class="mw-muted mw-center">Réception de ton mot…</p>`;
   let action = '';
   if (O.phase === 'guess' && O.last && O.last.out === me.pid) {
     action = O.last.guess !== null ? `<p class="mw-muted mw-center">Réponse envoyée…</p>` :
@@ -461,9 +468,9 @@ function render() {
 ROOT.addEventListener('click', e => {
   const b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
   const a = b.dataset.act;
-  if (a === 'mode-local') { mode = 'local'; store.set('mw_mode', mode); return render(); }
-  if (a === 'mode-online') { mode = 'online'; store.set('mw_mode', mode); return render(); }
-  if (a === 'back') { if (me) leaveRoom(); mode = null; store.set('mw_mode', null); return render(); }
+  if (a === 'mode-local') { mode = 'local'; store.set(K + '_mode', mode); return render(); }
+  if (a === 'mode-online') { mode = 'online'; store.set(K + '_mode', mode); return render(); }
+  if (a === 'back') { if (me) leaveRoom(); mode = null; store.set(K + '_mode', null); return render(); }
   // réglages (local ou hôte en ligne)
   if (/^(nU|nW)[+-]$|^cat$/.test(a)) {
     const cfg = mode === 'local' ? L : O.cfg, n = mode === 'local' ? L.players.length : O.players.length;
@@ -485,7 +492,7 @@ ROOT.addEventListener('click', e => {
   if (a === 'l-replay') return localStart();
   if (a === 'l-edit' || a === 'l-quit') { if (a === 'l-quit' && !confirm('Arrêter la partie en cours ?')) return; L.game = null; saveL(); return render(); }
   // mode un téléphone par joueur
-  if (a === 'o-share') { const url = b.dataset.url; if (navigator.share) navigator.share({ title: 'Mystère White', text: 'Rejoins ma partie de Mystère White : code ' + me.code, url }).catch(() => {}); else navigator.clipboard?.writeText(url).then(() => toast('Lien copié')).catch(() => toast(url)); return; }
+  if (a === 'o-share') { const url = b.dataset.url; if (navigator.share) navigator.share({ title: CFG.name, text: 'Rejoins ma partie de ' + CFG.name + ' : code ' + me.code, url }).catch(() => {}); else navigator.clipboard?.writeText(url).then(() => toast('Lien copié')).catch(() => toast(url)); return; }
   if (a === 'o-start') return hostStart();
   if (a === 'o-vote') { send({ k: 'vote', r: O.r, pid: me.pid, t: b.dataset.p }); (O.votes[O.r] = O.votes[O.r] || {})[me.pid] = b.dataset.p; buzz(8); return render(); }
   if (a === 'o-replay') return hostStart();
@@ -509,14 +516,19 @@ ROOT.addEventListener('submit', e => {
 
 // ---------- démarrage ----------
 // lien d'invitation (#mw/CODE) : on passe directement en mode « un téléphone par joueur »
-const inviteCode = (decodeURIComponent(location.hash).split('/')[1] || '').toUpperCase();
-const cur = store.get('mw_cur', null);
+const hashParts = decodeURIComponent(location.hash.slice(1)).split('/');
+const inviteCode = hashParts[0] === CFG.tab ? (hashParts[1] || '').toUpperCase() : '';
+const cur = store.get(K + '_cur', null);
 if (inviteCode && /^[A-Z0-9]{4}$/.test(inviteCode)) {
-  mode = 'online'; store.set('mw_mode', mode);
+  mode = 'online'; store.set(K + '_mode', mode);
   const r = store.get(roomKey(inviteCode), null);
   if (r && r.name) enterRoom(inviteCode, r.name, !!r.host); else render();
 } else if (mode === 'online' && cur) {
   const r = store.get(roomKey(cur), null);
   if (r && r.name) enterRoom(cur, r.name, !!r.host); else render();
 } else render();
-})();
+}
+
+// ---------- Mystère White classique ----------
+createUndercover({ root: $('mwView'), key: 'mw', tab: 'mw', salt: 'q7x2k9', name: 'Mystère White', pairs: MW_PAIRS,
+  picture: w => w === null ? '<img class="mw-pic" src="img/role-white.svg" alt="">' : '' });
