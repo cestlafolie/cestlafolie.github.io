@@ -21,7 +21,7 @@ const I = {   // silhouettes d'une seule couleur (currentColor), style tampon
   cupidon: '<path d="M32 55S9 40 9 24a11 11 0 0 1 23-5 11 11 0 0 1 23 5c0 16-23 31-23 31z"/><path d="M6 50L50 10" stroke="var(--lg-bg)" stroke-width="3"/>',
   petite: '<path d="M12 58c0-18 9-30 20-30s20 12 20 30z"/><path d="M16 36c0-14 7-24 16-24s16 10 16 24c-5-6-10-8-16-8s-11 2-16 8z"/><circle cx="32" cy="40" r="7" fill="var(--lg-bg)"/>',
 };
-const icon = (r, cls = '') => `<img class="lg-ico lg-i-${r} ${cls}" src="img/lg/${r}.svg" alt="">`;
+const icon = (r, cls = '') => `<img class="lg-ico lg-i-${r} ${cls}" src="img/lg/${r}.webp" alt="">`;
 const ROLES = {
   loup: { n: 'Loup-Garou', camp: 'loups', d: 'Chaque nuit, avec les autres loups, tu choisis une victime. Le jour, fais-toi passer pour un villageois.' },
   villageois: { n: 'Villageois', camp: 'village', d: 'Tu n’as pas de pouvoir. Écoute, observe et vote pour éliminer les loups.' },
@@ -81,8 +81,7 @@ function setup() {
       <div class="lg-role">${icon('villageois')}<span>Villageois</span><div class="lg-step"><b>${Math.max(0, v)}</b></div></div></div>
     ${n() >= 5 && !ok ? `<p class="lg-warn">${v < 0 ? 'Trop de rôles pour le nombre de joueurs.' : 'Il faut au moins 1 loup, et moins de loups que de villageois.'}</p>` : ''}
     <button class="lg-go" data-a="start"${ok ? '' : ' disabled'}>Distribuer les rôles</button>
-    <details class="lg-rules"><summary>Les rôles</summary>${['loup', 'villageois', ...SPECIAL].map(r => `<p>${icon(r, 'sm')}<b>${ROLES[r].n}</b> : ${ROLES[r].d}</p>`).join('')}</details>
-    <p class="lg-credit">Icônes : game-icons.net (Lorc, Delapouite, Skoll), licence CC BY 3.0</p>`;
+    <details class="lg-rules"><summary>Les rôles</summary>${['loup', 'villageois', ...SPECIAL].map(r => `<p>${icon(r, 'sm')}<b>${ROLES[r].n}</b> : ${ROLES[r].d}</p>`).join('')}</details>`;
 }
 
 function start() {

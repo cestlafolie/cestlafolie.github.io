@@ -790,3 +790,13 @@ img.lg-ico.sm{display:inline-block;width:30px;height:30px;vertical-align:middle}
 .lg-end img.lg-ico{width:96px;height:96px;margin-bottom:8px}
 .lg-back-card img.lg-ico{width:90px;height:90px;margin:0 auto;filter:grayscale(1) brightness(.5)}
 .lg-credit{margin-top:14px;font:600 .72rem "Manrope",sans-serif;color:#6f685d;text-align:center}
+/* badges illustrés (image fournie) : format portrait avec le nom intégré */
+img.lg-ico{border-radius:0!important;object-fit:contain;height:auto!important;aspect-ratio:256/280;filter:drop-shadow(0 6px 14px rgba(0,0,0,.5))}
+.lg-card img.lg-ico{width:170px!important}
+.lg-mini img.lg-ico{width:86px!important}
+.lg-hero img.lg-ico{width:92px!important}
+.lg-role img.lg-ico{width:48px!important}
+.lg-stepbox img.lg-ico{width:64px!important}
+.lg-end img.lg-ico{width:120px!important}
+img.lg-ico.sm{width:30px!important}
+.lg-back-card img.lg-ico{width:120px!important;filter:grayscale(1) brightness(.35)}
