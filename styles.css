@@ -150,4 +150,28 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;-we
 .danger{width:100%;margin-top:16px;height:50px;border-radius:3px;border:2px solid #e0402f;color:#e0402f;font:700 .95rem var(--head);letter-spacing:.12em;text-transform:uppercase;transition:background .2s,color .2s,transform .12s var(--ease)}
 .danger:active{background:#e0402f;color:var(--night);transform:scale(.98)}
 
+/* ===== Accueil : table de jeux (style propre au site) ===== */
+body[data-tab="accueil"]{background:radial-gradient(130% 90% at 50% 0%,#2b5a43 0%,#173426 55%,#0f241a 100%)}
+body[data-tab="accueil"] .live{visibility:hidden}
+body[data-tab="accueil"] .top-title{font:800 1.15rem "Fraunces",Georgia,serif;letter-spacing:0;text-transform:none}
+.home{padding:clamp(6px,2dvh,18px) 4px 0;color:#f6efe0}
+.h-kicker{font:600 .78rem var(--head);letter-spacing:.2em;text-transform:uppercase;color:#e9c46a}
+.h-title{font:800 clamp(2rem,calc((100vw - var(--railx)) * .11),2.9rem)/1 "Fraunces",Georgia,serif;letter-spacing:-.02em;margin:10px 0 12px}
+.h-sub{font:400 1rem/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;color:rgba(246,239,224,.75);max-width:30ch}
+.h-games{display:flex;flex-direction:column;gap:14px;margin-top:clamp(18px,4dvh,30px)}
+.h-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:18px 18px 16px;border-radius:14px;transition:transform .18s var(--ease)}
+.h-vote{background:var(--grain),linear-gradient(170deg,var(--paper),var(--paper-2));color:var(--ink);box-shadow:0 14px 30px rgba(0,0,0,.35),0 2px 0 rgba(255,255,255,.4) inset;transform:rotate(-1deg)}
+.h-vote:active{transform:rotate(0) scale(.97)}
+.h-stamp{font:700 .7rem var(--head);letter-spacing:.18em;text-transform:uppercase;color:var(--red);border:2px solid var(--red);padding:1px 7px;transform:rotate(-4deg);margin-bottom:4px}
+.h-name{font:800 1.6rem/1.05 "Fraunces",Georgia,serif;letter-spacing:-.01em}
+.h-vote .h-name{font:400 clamp(1.1rem,calc((100vw - var(--railx)) * .068),1.45rem) var(--stencil);white-space:nowrap;text-transform:uppercase;letter-spacing:.01em}
+.h-desc{font:400 .9rem/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;opacity:.8;max-width:32ch}
+.h-vote .h-desc{font:.88rem/1.45 var(--type);opacity:.85}
+.h-go{margin-top:8px;align-self:flex-end;font:700 .8rem var(--head);letter-spacing:.14em;text-transform:uppercase;background:var(--ink);color:var(--cream);padding:9px 16px;border-radius:999px}
+.h-go::after{content:"";display:inline-block;width:6px;height:6px;margin-left:9px;border-top:2px solid currentColor;border-right:2px solid currentColor;transform:translateY(-1px) rotate(45deg)}
+.h-soon{border:2px dashed rgba(246,239,224,.28);color:rgba(246,239,224,.6);transform:rotate(.8deg)}
+.h-soon .h-name{font-size:1.25rem}
+.tab-ico.home b{width:14px;height:12px;background:var(--night-line);clip-path:polygon(50% 0,100% 45%,86% 45%,86% 100%,14% 100%,14% 45%,0 45%)}
+.tab.active .tab-ico.home b,.rail-tab.active .tab-ico.home b{background:#e9c46a}
+
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}

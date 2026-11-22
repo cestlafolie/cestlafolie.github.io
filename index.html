@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://ntfy.sh" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@500;600;700&family=Cutive+Mono&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@500;600;700&family=Cutive+Mono&family=Fraunces:opsz,wght@9..144,600;9..144,800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -26,6 +26,7 @@
   <a class="mark" href="./">Dossier<span>H</span></a>
   <nav class="tabs">
     <p class="tabs-t">Onglets</p>
+    <button class="tab" data-tab="accueil"><i class="tab-ico home"><b></b></i>Accueil</button>
     <button class="tab" data-tab="vote"><i class="tab-ico"><b></b><b></b></i>Vote secret H</button>
   </nav>
   <p class="sidenav-foot">document confidentiel</p>
@@ -46,6 +47,25 @@
   un bouton <button class="tab" data-tab="xxx"> dans le menu, et son propre fichier JS.
 -->
 <main class="modules">
+
+  <!-- ===== Accueil (style propre au site : table de jeux) ===== -->
+  <section class="module home" id="mod-accueil" data-title="Accueil">
+    <p class="h-kicker">Soirée jeux</p>
+    <h2 class="h-title">On joue à quoi ce soir&nbsp;?</h2>
+    <p class="h-sub">Choisis un jeu. Tout se passe sur ton téléphone, en direct avec les autres.</p>
+    <div class="h-games">
+      <button class="h-card h-vote" data-go="vote">
+        <span class="h-stamp">Confidentiel</span>
+        <span class="h-name">Vote secret H</span>
+        <span class="h-desc">Oui ou non, à bulletin secret. Le résultat tombe quand tout le monde a voté.</span>
+        <span class="h-go">Ouvrir</span>
+      </button>
+      <div class="h-card h-soon">
+        <span class="h-name">Prochain jeu</span>
+        <span class="h-desc">Bientôt ici.</span>
+      </div>
+    </div>
+  </section>
 
   <!-- ===== Module : vote oui / non ===== -->
   <section class="module" id="mod-vote" data-title="Vote secret H">

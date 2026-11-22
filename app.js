@@ -46,6 +46,7 @@ function tweenText(el, to, fmt, ms = 450) {
     tabs.concat(railTabs).forEach(t => t.classList.toggle('active', t.dataset.tab === name));
     const title = mod.dataset.title || name;
     $('topTitle').textContent = title; document.title = title;
+    document.body.dataset.tab = name;
     if (push && location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
     close();
   }
@@ -60,6 +61,7 @@ function tweenText(el, to, fmt, ms = 450) {
     rail.appendChild(b); return b;
   });
   tabs.forEach(t => t.onclick = () => show(t.dataset.tab, true));
+  document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => show(b.dataset.go, true));
   $('burger').onclick = () => { side.classList.add('open'); scrim.classList.add('show'); };
   scrim.onclick = close;
   addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
