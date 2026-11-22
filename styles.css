@@ -699,3 +699,81 @@ body[data-tab="lg"]::before{background:
 body[data-tab="lg"] .top-title{padding-right:70px}
 .lg-night::after{display:none}
 .lg-go:disabled{background:rgba(60,40,40,.85)!important;border:1px dashed rgba(216,180,90,.5)!important;color:#c9b98f!important;opacity:1}
+
+/* ===== Loup-Garou v3 : sobre, imprimé (aucun dégradé, aucun halo) ===== */
+html:has(body[data-tab="lg"]){background:#0e0d0c}
+body[data-tab="lg"]{background:#0e0d0c!important}
+body[data-tab="lg"]::before{display:none}
+body[data-tab="lg"] .top-title{font:700 1.25rem "Cormorant Garamond",Georgia,serif;letter-spacing:0;color:#ece6da;padding-right:0}
+.lg{--lg-bg:#0e0d0c;--bone:#ece6da;--dim:#8f877a;--rule:#2b2825;--red:#b3261e;--gold:#b3261e;--gold2:#ece6da;font-family:"Cormorant Garamond",Georgia,serif;font-size:1.1rem;color:var(--bone)}
+.lg *{text-shadow:none!important}
+.lg-hero h2,.lg-h,.lg-night b,.lg-day b,.lg-end b,.lg-card b,.lg-pass b,.lg-mode b,.lg-code b,.lg-stepbox b,.lg-back-card b,.lg-mini b{font-family:"Cormorant Garamond",Georgia,serif!important;letter-spacing:0!important;font-weight:700!important;text-transform:none}
+.lg-hero{border-bottom:1px solid var(--rule);padding-bottom:14px}
+.lg-hero h2{font-size:2.4rem;color:var(--bone)}
+.lg-hero .lg-ico{color:var(--red)}
+.lg-ico{color:var(--bone)}
+.lg-i-loup{color:var(--red)}
+.lg-h{color:var(--bone);font-size:1.25rem;border-bottom:1px solid var(--rule);padding-bottom:6px}
+.lg-h em{background:none;color:var(--dim);font-family:inherit;padding:0;font-size:1rem}
+.lg-h small{font-family:inherit;font-size:.95rem}
+/* tout à plat : fonds unis, filets fins, angles nets */
+.lg-mode,.lg-mode-alt,.lg-role,.lg-rules,.lg-stepbox,.lg-chip,.lg-list li,.lg-pick button,.lg-opt,.lg-night,.lg-day,.lg-pass,.lg-death,.lg-reveal,.lg-end,.lg-code,.lg-card,.lg-mini,.lg-back-card,.lg-score{background:transparent!important;border:1px solid var(--rule)!important;border-radius:4px!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.lg-card::before,.lg-mini::before,.lg-card::after,.lg-back-card::before{display:none!important}
+.lg-chip{border-radius:2px!important}
+.lg-mode{padding:16px 0!important;border-width:0 0 1px!important}
+.lg-mode b{font-size:1.45rem}
+.lg-mode span,.lg-card p,.lg-muted,.lg-stepbox p,.lg-rules p,.lg-hero p{color:var(--dim)!important;font-family:inherit;font-weight:500}
+.lg-role{border-width:0 0 1px!important;padding:10px 0!important}
+.lg-step button{background:none;border:1px solid var(--rule);border-radius:2px;color:var(--bone)}
+.lg-step b{font-family:inherit;font-weight:700}
+.lg-add input,.lg-form input{background:transparent!important;border:1px solid var(--rule)!important;border-radius:2px!important;font-size:18px}
+.lg-add input:focus,.lg-form input:focus{border-color:var(--bone)!important}
+.lg-add button{background:var(--bone)!important;color:var(--lg-bg)!important;border-radius:2px!important;font-family:inherit!important}
+/* bouton principal : rouge plein, plat */
+.lg-go{background:var(--red)!important;color:#fff!important;border:none!important;border-radius:2px!important;box-shadow:none!important;font:700 1.15rem "Cormorant Garamond",Georgia,serif!important;letter-spacing:0!important}
+.lg-go:disabled{background:transparent!important;border:1px solid var(--rule)!important;color:var(--dim)!important}
+.lg-pick button{border-radius:2px!important;font-family:inherit;font-weight:600}
+.lg-pick button.on{background:var(--bone)!important;color:var(--lg-bg)!important;border-color:var(--bone)!important}
+.lg-opt.on{background:var(--bone)!important;color:var(--lg-bg)!important}
+/* cartes : simple bordure, le camp en petites capitales */
+.lg-card{padding:22px 16px!important;text-align:left}
+.lg-card .lg-ico{width:56px;height:56px}
+.lg-card b{color:var(--bone)!important;font-size:2.2rem!important;margin:10px 0 6px!important}
+.lg-c-loups.lg-card,.lg-c-loups.lg-mini{border-color:var(--red)!important}
+.lg-c-loups.lg-card b,.lg-c-loups.lg-mini b,.lg-c-loups.lg-mini span{color:var(--red)!important}
+.lg-c-loups.lg-card p{color:var(--dim)!important}
+.lg-mini{align-items:flex-start!important;text-align:left!important;padding:10px!important}
+.lg-mini .lg-ico{width:30px;height:30px}
+.lg-mini b{color:var(--bone)!important;font-size:1.15rem}.lg-mini span{color:var(--dim)!important;font-family:inherit}
+.lg-back-card{padding:46px 16px!important;border-style:dashed!important}
+.lg-back-card b{color:var(--dim)!important}
+.lg-back-card .lg-ico{color:var(--rule)}
+/* nuit / jour : bandeau texte, pas de décor */
+.lg-night,.lg-day{border-width:0 0 1px!important;padding:6px 0 12px!important}
+.lg-night b,.lg-day b{color:var(--bone)!important;font-size:1.8rem!important}
+.lg-night span,.lg-day span{font-family:"Manrope",sans-serif;color:var(--dim);opacity:1}
+.lg-day span{color:var(--red)}
+.lg-dots i{border-radius:0;height:3px;background:var(--rule)}.lg-dots i.done{background:var(--dim)}.lg-dots i.on{background:var(--red)}
+.lg-stepbox{border-width:0!important;padding:4px 0!important}
+.lg-stepbox .lg-ico{color:var(--red)}
+.lg-death{border-color:var(--red)!important}
+.lg-death.lg-none{border-color:var(--rule)!important}
+.lg-reveal{border-color:var(--bone)!important}
+.lg-end{text-align:left;padding:18px 0!important;border-width:1px 0!important}
+.lg-end b{color:var(--bone)!important;font-size:2.2rem!important}
+.lg-e-loups b{color:var(--red)!important}
+.lg-code{color:var(--bone)}
+.lg-code b{color:var(--bone)}
+.lg-code button{background:var(--bone);color:var(--lg-bg);border-radius:2px}
+.lg-list li.out{opacity:.4}
+.lg-link,.lg-back{color:var(--dim)!important;font-family:inherit}
+.lg-net{font-family:"Manrope",sans-serif}
+/* carte d'accueil */
+.h-lg{background:#0e0d0c!important;border:1px solid #2b2825!important;box-shadow:none!important;transform:none!important;border-radius:6px}
+.h-lg .h-name{font:700 1.6rem "Cormorant Garamond",Georgia,serif!important;color:#ece6da}
+.h-lg .h-desc{color:#8f877a}
+.h-lg .h-go{background:#b3261e!important;color:#fff!important;border-radius:2px}
+.h-lg-moon{box-shadow:none;width:auto;height:auto;margin:0}
+.lg-c-loups.lg-card,.lg-c-loups.lg-mini{background:transparent!important}
+.lg{font-variant-numeric:lining-nums tabular-nums}
+.lg-step b,.lg-h em{font-family:"Manrope",sans-serif!important;font-weight:700!important;font-size:1rem!important}

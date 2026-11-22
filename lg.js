@@ -12,16 +12,16 @@ const shuffle = arr => { const a = arr.slice(); for (let i = a.length - 1; i > 0
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 // ---------- rôles ----------
-const I = {   // icônes originales
-  loup: '<path d="M14 54l6-30 12 10h0l12-10 6 30-18 14z" fill="#7d8bb8"/><path d="M20 24l-4-14 12 12M44 24l4-14-12 12" fill="#7d8bb8"/><circle cx="25" cy="42" r="3.5" fill="#ffcf3f"/><circle cx="39" cy="42" r="3.5" fill="#ffcf3f"/><path d="M28 54l4 4 4-4" fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/>',
-  villageois: '<path d="M12 34L32 16l20 18v24H12z" fill="#c98b4e"/><path d="M8 36L32 14l24 22" fill="none" stroke="#7a4b23" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><rect x="26" y="40" width="12" height="18" rx="2" fill="#7a4b23"/>',
-  voyante: '<path d="M6 32s10-16 26-16 26 16 26 16-10 16-26 16S6 32 6 32z" fill="#efe6ff"/><circle cx="32" cy="32" r="10" fill="#7c4dff"/><circle cx="32" cy="32" r="4" fill="#1d1238"/><circle cx="35" cy="29" r="2" fill="#fff"/>',
-  sorciere: '<path d="M24 12h16v8l8 10v22a6 6 0 0 1-6 6H22a6 6 0 0 1-6-6V30l8-10z" fill="#3ddc97"/><rect x="22" y="8" width="20" height="6" rx="2" fill="#8d6e63"/><path d="M16 38h32v14a6 6 0 0 1-6 6H22a6 6 0 0 1-6-6z" fill="#1fa774"/><circle cx="28" cy="46" r="3" fill="#fff" opacity=".7"/>',
-  chasseur: '<circle cx="32" cy="32" r="20" fill="none" stroke="#e5383b" stroke-width="5"/><circle cx="32" cy="32" r="6" fill="#e5383b"/><path d="M32 4v14M32 46v14M4 32h14M46 32h14" stroke="#e5383b" stroke-width="5" stroke-linecap="round"/>',
-  cupidon: '<path d="M32 54S10 40 10 25a11 11 0 0 1 22-4 11 11 0 0 1 22 4c0 15-22 29-22 29z" fill="#ff5c8a"/><path d="M8 52L54 12" stroke="#ffcf3f" stroke-width="4" stroke-linecap="round"/><path d="M54 12l-10 2 8 8z" fill="#ffcf3f"/>',
-  petite: '<path d="M14 54c0-16 8-26 18-26s18 10 18 26z" fill="#e5383b"/><path d="M18 34c0-12 6-22 14-22s14 10 14 22c-4-6-9-8-14-8s-10 2-14 8z" fill="#c1121f"/><circle cx="32" cy="38" r="8" fill="#f2c9a0"/><circle cx="29" cy="38" r="1.6" fill="#1d1238"/><circle cx="35" cy="38" r="1.6" fill="#1d1238"/>',
+const I = {   // silhouettes d'une seule couleur (currentColor), style tampon
+  loup: '<path d="M10 56l5-34 9 9 8-17 8 17 9-9 5 34-22 6z"/><path d="M24 40h5l-2 4zM35 40h5l-3 4z" fill="var(--lg-bg)"/>',
+  villageois: '<path d="M8 32L32 12l24 20h-6v24H14V32z"/><rect x="27" y="40" width="10" height="16" fill="var(--lg-bg)"/>',
+  voyante: '<path d="M4 32s11-16 28-16 28 16 28 16-11 16-28 16S4 32 4 32z"/><circle cx="32" cy="32" r="9" fill="var(--lg-bg)"/><circle cx="32" cy="32" r="4.5"/>',
+  sorciere: '<path d="M25 8h14v9l9 12v25a4 4 0 0 1-4 4H20a4 4 0 0 1-4-4V29l9-12z"/><path d="M20 36h24" stroke="var(--lg-bg)" stroke-width="3"/>',
+  chasseur: '<path d="M32 6v12M32 46v12M6 32h12M46 32h12" stroke="currentColor" stroke-width="5"/><circle cx="32" cy="32" r="17" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="32" cy="32" r="5"/>',
+  cupidon: '<path d="M32 55S9 40 9 24a11 11 0 0 1 23-5 11 11 0 0 1 23 5c0 16-23 31-23 31z"/><path d="M6 50L50 10" stroke="var(--lg-bg)" stroke-width="3"/>',
+  petite: '<path d="M12 58c0-18 9-30 20-30s20 12 20 30z"/><path d="M16 36c0-14 7-24 16-24s16 10 16 24c-5-6-10-8-16-8s-11 2-16 8z"/><circle cx="32" cy="40" r="7" fill="var(--lg-bg)"/>',
 };
-const icon = (r, cls = '') => `<svg class="lg-ico ${cls}" viewBox="0 0 64 64" aria-hidden="true">${I[r]}</svg>`;
+const icon = (r, cls = '') => `<svg class="lg-ico lg-i-${r} ${cls}" viewBox="0 0 64 64" fill="currentColor" aria-hidden="true">${I[r]}</svg>`;
 const ROLES = {
   loup: { n: 'Loup-Garou', camp: 'loups', d: 'Chaque nuit, avec les autres loups, tu choisis une victime. Le jour, fais-toi passer pour un villageois.' },
   villageois: { n: 'Villageois', camp: 'village', d: 'Tu n’as pas de pouvoir. Écoute, observe et vote pour éliminer les loups.' },
