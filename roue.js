@@ -1,16 +1,16 @@
-// ===== Module : roue du hasard =====
+// ===== Module : tirage au sort (grille lumineuse) =====
 // Liste de joueurs enregistrée sur l'appareil (localStorage), tirage individuel ou par équipes.
+// Une lumière saute de case en case puis ralentit jusqu'au gagnant.
 // Le hasard vient de crypto.getRandomValues (pas de Math.random).
 (() => {
 const KEY = 'roue_v1';
-// couleur du segment + couleur du texte lisible dessus
-const PALETTE = [['#ff4d6d', '#fff'], ['#ffb703', '#1a1300'], ['#3a86ff', '#fff'], ['#06d6a0', '#00261c'], ['#8338ec', '#fff'], ['#fb5607', '#fff'], ['#00bbf9', '#00222e'], ['#f15bb5', '#fff']];
-const MAX = 40, LEDS = 24;
+const PALETTE = ['#ff4d6d', '#ffb703', '#3a86ff', '#06d6a0', '#8338ec', '#fb5607', '#00bbf9', '#f15bb5'];
+const TEAM = ['#ff4d6d', '#06d6a0', '#3a86ff', '#ffb703', '#8338ec', '#fb5607', '#00bbf9', '#f15bb5'];
+const MAX = 40;
 
-let st = load();
-let rot = 0, spinning = false, ledTimer = null;
-const svgNS = 'http://www.w3.org/2000/svg';
+let st = load(), running = false;
 const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wait = ms => new Promise(r => setTimeout(r, ms));
 
 function load() {
   const def = { players: [], mode: 'solo', teams: 2, remove: false, last: null };
@@ -27,90 +27,38 @@ const active = () => st.players.filter(p => !p.out);
 const colorOf = p => PALETTE[Math.max(0, st.players.indexOf(p)) % PALETTE.length];
 const initial = name => (name.match(/\p{L}|\d/u) || ['?'])[0].toUpperCase();
 
-// ---- dessin de la roue
-function el(tag, attrs) { const e = document.createElementNS(svgNS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; }
-function drawWheel() {
-  const svg = $('rWheel'), list = active(), n = list.length;
-  svg.innerHTML = '';
-  // relief : léger dégradé lumineux par-dessus les segments
-  const defs = el('defs', {});
-  const rg = el('radialGradient', { id: 'rShade', cx: '50%', cy: '50%', r: '50%' });
-  rg.append(el('stop', { offset: '30%', 'stop-color': '#fff', 'stop-opacity': '.18' }), el('stop', { offset: '100%', 'stop-color': '#000', 'stop-opacity': '.22' }));
-  defs.appendChild(rg); svg.appendChild(defs);
-  // couronne et lumières (fixes)
-  svg.appendChild(el('circle', { r: 99, fill: '#151922', stroke: '#2a3040', 'stroke-width': 1 }));
-  const leds = el('g', { id: 'rLeds' });
-  for (let k = 0; k < LEDS; k++) {
-    const t = (k / LEDS) * 2 * Math.PI;
-    leds.appendChild(el('circle', { cx: 93 * Math.sin(t), cy: -93 * Math.cos(t), r: 1.6, class: 'r-led' + (k % 2 ? '' : ' on') }));
-  }
-  svg.appendChild(leds);
-
-  const g = el('g', { id: 'rRot' }); g.style.transform = 'rotate(' + rot + 'deg)';
-  svg.appendChild(g);
-  const R = 88;
-  if (!n) {
-    g.appendChild(el('circle', { r: R, fill: '#0f1218', stroke: '#2a3040', 'stroke-width': 1, 'stroke-dasharray': '3 3' }));
-    const t = el('text', { y: 50, 'text-anchor': 'middle', class: 'r-empty' }); t.textContent = 'Ajoute des joueurs'; g.appendChild(t);
-    return;
-  }
-  const a = 360 / n;
-  list.forEach((p, i) => {
-    let [bg, fg] = colorOf(p);
-    if (n === 1) g.appendChild(el('circle', { r: R, fill: bg }));
-    else {
-      const t1 = (i * a - 90) * Math.PI / 180, t2 = ((i + 1) * a - 90) * Math.PI / 180;
-      const d = `M0 0 L${R * Math.cos(t1)} ${R * Math.sin(t1)} A${R} ${R} 0 ${a > 180 ? 1 : 0} 1 ${R * Math.cos(t2)} ${R * Math.sin(t2)}Z`;
-      g.appendChild(el('path', { d, fill: bg, stroke: '#0b0d12', 'stroke-width': .9 }));
-    }
-    const fs = n > 24 ? 5.5 : n > 14 ? 7 : n > 8 ? 8.5 : 10;
-    const label = p.name.length > 12 ? p.name.slice(0, 11) + '…' : p.name;
-    const c = (i + .5) * a, left = n > 1 && c > 180;   // moitié gauche : texte remis à l'endroit
-    const t = el('text', { x: left ? -78 : 78, y: 0, 'text-anchor': left ? 'start' : 'end', 'dominant-baseline': 'central', 'font-size': fs, fill: fg, class: 'r-label', transform: `rotate(${c - 90 + (left ? 180 : 0)})` });
-    t.textContent = label; g.appendChild(t);
+// ---- grille
+function drawGrid() {
+  const grid = $('rGrid'), list = active(), n = list.length;
+  grid.innerHTML = '';
+  const cols = n <= 4 ? 2 : n <= 9 ? 3 : n <= 16 ? 4 : 5;
+  grid.style.setProperty('--cols', cols);
+  grid.dataset.size = n <= 9 ? 'l' : n <= 16 ? 'm' : 's';
+  if (!n) { const e = document.createElement('p'); e.className = 'r-empty'; e.textContent = 'Ajoute des joueurs ci-dessous'; grid.appendChild(e); return; }
+  list.forEach(p => {
+    const c = document.createElement('div'); c.className = 'r-cell'; c.style.setProperty('--c', colorOf(p));
+    const av = document.createElement('i'); av.textContent = initial(p.name);
+    const nm = document.createElement('span'); nm.textContent = p.name;
+    c.append(av, nm); grid.appendChild(c);
   });
-  g.appendChild(el('circle', { r: R, fill: 'url(#rShade)', 'pointer-events': 'none' }));
 }
+const cells = () => [...$('rGrid').querySelectorAll('.r-cell')];
 
-// ---- lumières qui défilent pendant le tirage
-function leds(mode) {
-  clearInterval(ledTimer);
-  const all = [...document.querySelectorAll('#rLeds circle')];
-  if (mode === 'chase') { let k = 0; ledTimer = setInterval(() => { all.forEach((c, i) => c.classList.toggle('on', (i + k) % 4 === 0)); k++; }, 70); }
-  else if (mode === 'flash') { let k = 0; ledTimer = setInterval(() => { all.forEach(c => c.classList.toggle('on', k % 2 === 0)); if (++k > 7) { clearInterval(ledTimer); leds('idle'); } }, 120); }
-  else all.forEach((c, i) => c.classList.toggle('on', i % 2 === 0));
-}
-
-// ---- angle actuel de la roue (pour le « clic » du pointeur à chaque segment)
-function currentAngle() {
-  const m = getComputedStyle($('rRot')).transform;
-  if (!m || m === 'none') return 0;
-  const v = m.match(/matrix\(([^)]+)\)/); if (!v) return 0;
-  const [a, b] = v[1].split(',').map(Number);
-  return ((Math.atan2(b, a) * 180 / Math.PI) + 360) % 360;
-}
-
-// ---- tour de roue jusqu'au segment i
-function spinTo(i, n, ms) {
-  return new Promise(res => {
-    const a = 360 / n, center = (i + .5) * a, jitter = (rnd(1000) / 1000 - .5) * a * .6;
-    const target = -(center + jitter);
-    const cur = ((rot % 360) + 360) % 360;
-    const delta = ((target - cur) % 360 + 360) % 360;
-    rot += 360 * 5 + delta;
-    const g = $('rRot'), dur = reduce() ? 300 : ms;
-    g.style.transition = `transform ${dur}ms cubic-bezier(.12,.7,.1,1)`;
-    requestAnimationFrame(() => { g.style.transform = 'rotate(' + rot + 'deg)'; });
-    // pointeur qui claque à chaque passage de segment
-    const ptr = document.querySelector('.r-pointer'); let lastSeg = null, raf;
-    const watch = () => {
-      const seg = Math.floor(((360 - currentAngle()) % 360) / a);
-      if (lastSeg !== null && seg !== lastSeg && n > 1) { ptr.classList.remove('tick'); void ptr.offsetWidth; ptr.classList.add('tick'); }
-      lastSeg = seg; raf = requestAnimationFrame(watch);
-    };
-    if (!reduce()) raf = requestAnimationFrame(watch);
-    setTimeout(() => { cancelAnimationFrame(raf); g.style.transition = ''; res(); }, dur + 60);
-  });
+// ---- la lumière saute de case en case et s'arrête sur « target »
+async function chase(target, steps) {
+  const cs = cells(), n = cs.length;
+  if (reduce() || n === 1) { cs[target].classList.add('hot'); await wait(250); return; }
+  let pos = -1;
+  for (let s = 0; s < steps; s++) {
+    const last = s === steps - 1;
+    let next = last ? target : rnd(n);
+    if (!last && (next === pos || (s === steps - 2 && next === target))) next = (next + 1 + rnd(n - 1)) % n;
+    if (pos >= 0) cs[pos].classList.remove('hot');
+    cs[next].classList.add('hot'); pos = next;
+    if (s % 2 === 0) buzz(4);
+    const left = steps - s;                       // ralentit sur la fin
+    await wait(left > 10 ? 70 : 70 + (10 - left) * (10 - left) * 5.5);
+  }
 }
 
 // ---- confettis
@@ -121,10 +69,10 @@ function confetti() {
   cv.style.width = innerWidth + 'px'; cv.style.height = innerHeight + 'px';
   document.body.appendChild(cv);
   const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
-  const w = $('rWheel').getBoundingClientRect(), ox = w.left + w.width / 2, oy = w.top + w.height / 2;
+  const w = (document.querySelector('.r-cell.won') || $('rStage')).getBoundingClientRect(), ox = w.left + w.width / 2, oy = w.top + w.height / 2;
   const parts = Array.from({ length: 90 }, () => {
     const ang = (rnd(360) / 180) * Math.PI, sp = 4 + rnd(70) / 10;
-    return { x: ox, y: oy, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 4, s: 4 + rnd(5), r: rnd(360), vr: rnd(20) - 10, c: PALETTE[rnd(PALETTE.length)][0] };
+    return { x: ox, y: oy, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 4, s: 4 + rnd(5), r: rnd(360), vr: rnd(20) - 10, c: PALETTE[rnd(PALETTE.length)] };
   });
   const t0 = performance.now();
   (function frame(now) {
@@ -135,32 +83,41 @@ function confetti() {
   })(t0);
 }
 
-// ---- affichage du résultat
+// ---- résultat (carte sous la grille + état de la grille)
 function showResult() {
   const box = $('rResult'), wrap = $('rResultWrap'), last = st.last;
   box.innerHTML = '';
+  cells().forEach(c => { c.classList.remove('hot', 'won', 'lost'); c.style.removeProperty('--t'); c.removeAttribute('data-team'); });
   if (!last) { wrap.classList.remove('open'); return; }
   if (last.type === 'solo') {
     const k = document.createElement('div'); k.className = 'r-k'; k.textContent = 'Tiré au sort';
     const v = document.createElement('div'); v.className = 'r-win';
     const p = st.players.find(x => x.name === last.name);
-    const dot = document.createElement('i'); dot.style.setProperty('--wc', p ? colorOf(p)[0] : '#fff');
+    const dot = document.createElement('i'); dot.style.setProperty('--wc', p ? colorOf(p) : '#fff');
     const nm = document.createElement('span'); nm.textContent = last.name;
     v.append(dot, nm); box.append(k, v);
+    // case gagnante allumée si la personne est encore dans la grille
+    const idx = active().findIndex(x => x.name === last.name);
+    if (idx >= 0) cells().forEach((c, i) => c.classList.add(i === idx ? 'won' : 'lost'));
   } else {
     const k = document.createElement('div'); k.className = 'r-k'; k.textContent = last.teams.length + ' équipes';
     const grid = document.createElement('div'); grid.className = 'r-teams';
     last.teams.forEach((team, i) => {
-      const c = document.createElement('div'); c.className = 'r-team'; c.style.setProperty('--tc', PALETTE[(i * 3) % PALETTE.length][0]);
+      const c = document.createElement('div'); c.className = 'r-team'; c.style.setProperty('--tc', TEAM[i % TEAM.length]);
       const h = document.createElement('b'); h.textContent = 'Équipe ' + (i + 1);
       const ul = document.createElement('ul');
       team.forEach(name => { const li = document.createElement('li'); li.textContent = name; ul.appendChild(li); });
       c.append(h, ul); grid.appendChild(c);
     });
     box.append(k, grid);
+    // chaque case prend la couleur de son équipe
+    const list = active();
+    last.teams.forEach((team, ti) => team.forEach(name => {
+      const idx = list.findIndex(x => x.name === name);
+      if (idx >= 0) { const c = cells()[idx]; c.style.setProperty('--t', TEAM[ti % TEAM.length]); c.dataset.team = ti + 1; c.style.transitionDelay = (idx * 45) + 'ms'; }
+    }));
   }
   wrap.classList.add('open');
-  box.classList.remove('pop'); void box.offsetWidth; box.classList.add('pop');
 }
 
 // ---- liste des joueurs
@@ -169,13 +126,13 @@ function renderPlayers() {
   st.players.forEach(p => {
     const c = document.createElement('div'); c.className = 'r-chip' + (p.out ? ' out' : '');
     const name = document.createElement('button'); name.className = 'r-chip-n';
-    const av = document.createElement('i'); av.textContent = initial(p.name); av.style.setProperty('--cc', colorOf(p)[0]);
+    const av = document.createElement('i'); av.textContent = initial(p.name); av.style.setProperty('--cc', colorOf(p));
     const nm = document.createElement('span'); nm.textContent = p.name;
     name.append(av, nm);
-    name.title = p.out ? 'Remettre dans la roue' : 'Sortir de la roue';
-    name.onclick = () => { if (spinning) return; p.out = !p.out; save(); renderAll(); };
+    name.title = p.out ? 'Remettre dans le tirage' : 'Sortir du tirage';
+    name.onclick = () => { if (running) return; p.out = !p.out; save(); renderAll(); };
     const x = document.createElement('button'); x.className = 'r-chip-x'; x.setAttribute('aria-label', 'Supprimer ' + p.name); x.textContent = '×';
-    x.onclick = () => { if (spinning) return; st.players = st.players.filter(q => q !== p); save(); renderAll(); };
+    x.onclick = () => { if (running) return; st.players = st.players.filter(q => q !== p); save(); renderAll(); };
     c.append(name, x); chips.appendChild(c);
   });
   const n = active().length;
@@ -191,10 +148,10 @@ function renderControls() {
   const n = active().length;
   st.teams = Math.max(2, Math.min(st.teams, Math.max(2, n), 8));
   $('rTeamN').textContent = st.teams;
-  $('rSpin').textContent = st.mode === 'solo' ? 'Tourner' : 'Former';
-  $('rSpin').disabled = spinning || (st.mode === 'solo' ? n < 1 : n < 2);
+  $('rSpin').textContent = running ? 'Tirage…' : st.mode === 'solo' ? 'Lancer le tirage' : 'Former les équipes';
+  $('rSpin').disabled = running || (st.mode === 'solo' ? n < 1 : n < 2);
 }
-function renderAll() { if (!spinning) drawWheel(); renderPlayers(); renderControls(); }
+function renderAll() { if (!running) { drawGrid(); showResult(); } renderPlayers(); renderControls(); }
 
 // ---- actions
 $('rAdd').onsubmit = e => {
@@ -206,34 +163,38 @@ $('rAdd').onsubmit = e => {
   st.players.push({ id: Date.now() + '' + rnd(1000), name, out: false });
   inp.value = ''; save(); renderAll(); buzz(8);
 };
-document.querySelectorAll('.r-mode-b').forEach(b => b.onclick = () => { if (spinning) return; st.mode = b.dataset.mode; save(); renderControls(); });
+document.querySelectorAll('.r-mode-b').forEach(b => b.onclick = () => { if (running) return; st.mode = b.dataset.mode; save(); renderControls(); });
 $('rRemove').onchange = e => { st.remove = e.target.checked; save(); };
-$('rTeamMinus').onclick = () => { if (spinning) return; st.teams--; save(); renderControls(); };
-$('rTeamPlus').onclick = () => { if (spinning) return; st.teams++; save(); renderControls(); };
-$('rBack').onclick = () => { if (spinning) return; st.players.forEach(p => p.out = false); save(); renderAll(); };
-$('rClear').onclick = () => { if (spinning || !confirm('Effacer toute la liste de joueurs ?')) return; st.players = []; st.last = null; save(); renderAll(); showResult(); };
+$('rTeamMinus').onclick = () => { if (running) return; st.teams--; save(); renderControls(); };
+$('rTeamPlus').onclick = () => { if (running) return; st.teams++; save(); renderControls(); };
+$('rBack').onclick = () => { if (running) return; st.players.forEach(p => p.out = false); save(); renderAll(); };
+$('rClear').onclick = () => { if (running || !confirm('Effacer toute la liste de joueurs ?')) return; st.players = []; st.last = null; save(); renderAll(); };
 
 $('rSpin').onclick = async () => {
   const list = active(), n = list.length;
-  if (spinning || !n) return;
-  spinning = true; renderControls(); buzz(10); leds('chase');
+  if (running || !n) return;
+  running = true; renderControls(); buzz(10);
   $('rResultWrap').classList.remove('open');
+  cells().forEach(c => { c.classList.remove('hot', 'won', 'lost'); c.style.removeProperty('--t'); c.removeAttribute('data-team'); });
+  $('rStage').classList.add('running');
   if (st.mode === 'solo') {
     const i = rnd(n);
-    await spinTo(i, n, 4600);
+    await chase(i, 26 + rnd(8));
     st.last = { type: 'solo', name: list[i].name };
+    cells().forEach((c, k) => { c.classList.remove('hot'); c.classList.add(k === i ? 'won' : 'lost'); });
+    await wait(reduce() ? 0 : 900);              // on laisse voir la case gagnante avant de la retirer
     if (st.remove) list[i].out = true;
   } else {
     const k = Math.min(st.teams, n);
-    await spinTo(rnd(n), n, 2600);
+    await chase(rnd(n), 16);
     const teams = Array.from({ length: k }, () => []);
     shuffle(list).forEach((p, idx) => teams[idx % k].push(p.name));
     st.last = { type: 'teams', teams };
   }
-  spinning = false; save(); buzz([18, 50, 18]);
-  renderAll(); leds('flash'); showResult(); confetti();
+  $('rStage').classList.remove('running');
+  running = false; save(); buzz([18, 50, 18]);
+  renderAll(); confetti();
 };
 
 renderAll();
-showResult();
 })();

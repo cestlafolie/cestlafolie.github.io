@@ -262,3 +262,35 @@ body[data-tab="roue"] .top-title{font:800 1.12rem "Manrope",system-ui,sans-serif
 /* couleur de fond derrière la page (rebond iOS, zones hors page) assortie à l'onglet */
 html:has(body[data-tab="roue"]){background:#0b0d12}
 html:has(body[data-tab="accueil"]){background:#0d1b3a}
+
+/* ===== Tirage au sort : grille lumineuse ===== */
+.r-stage{margin-top:18px;padding:12px;border-radius:22px;background:#0f1218;border:1px solid var(--r-line);box-shadow:inset 0 0 40px rgba(0,0,0,.5)}
+.r-grid{display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,1fr));gap:8px}
+.r-empty{grid-column:1/-1;text-align:center;padding:40px 0;color:var(--r-dim);font:600 .92rem "Manrope",sans-serif}
+.r-cell{position:relative;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:74px;padding:10px 6px;border-radius:14px;background:#181d28;border:1px solid var(--r-line);color:#c3c8d3;font:700 .92rem "Manrope",sans-serif;text-align:center;transition:background .12s,color .12s,box-shadow .12s,transform .12s,opacity .3s,border-color .12s}
+.r-grid[data-size="m"] .r-cell{min-height:62px;font-size:.84rem}
+.r-grid[data-size="s"] .r-cell{min-height:52px;font-size:.74rem;gap:4px;padding:8px 4px}
+.r-cell i{width:28px;height:28px;border-radius:50%;background:var(--c);color:#0b0d12;font:800 .75rem/28px "Manrope",sans-serif;font-style:normal;transition:transform .12s}
+.r-grid[data-size="s"] .r-cell i{width:22px;height:22px;line-height:22px;font-size:.65rem}
+.r-cell span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* la lumière */
+.r-cell.hot{background:var(--c);border-color:var(--c);color:#0b0d12;box-shadow:0 0 0 2px rgba(255,255,255,.9),0 0 28px var(--c);transform:scale(1.05);z-index:1}
+.r-cell.hot i{background:#0b0d12;color:#fff;transform:scale(1.1)}
+/* gagnant */
+.r-cell.won{background:var(--c);border-color:#fff;color:#0b0d12;box-shadow:0 0 0 3px #fff,0 0 40px var(--c);transform:scale(1.07);z-index:1;animation:rwin .7s ease-in-out 3}
+.r-cell.won i{background:#0b0d12;color:#fff}
+@keyframes rwin{50%{transform:scale(1.13)}}
+.r-cell.lost{opacity:.35}
+/* équipes : chaque case prend la couleur de son équipe */
+.r-cell[data-team]{background:color-mix(in srgb,var(--t) 22%,#181d28);border-color:var(--t);color:#fff}
+.r-cell[data-team] i{background:var(--t)}
+.r-cell[data-team]::after{content:attr(data-team);position:absolute;top:5px;right:7px;font:800 .62rem "Manrope",sans-serif;color:var(--t)}
+.r-stage.running .r-cell:not(.hot){opacity:.75}
+/* bouton de lancement */
+.r-go{display:block;width:100%;height:56px;margin-top:14px;border-radius:16px;background:var(--r-ink);color:#0b0d12;font:800 1.02rem "Manrope",sans-serif;box-shadow:0 10px 24px rgba(0,0,0,.4);transition:transform .15s var(--ease),opacity .2s}
+.r-go:active:not(:disabled){transform:scale(.97)}
+.r-go:disabled{opacity:.45}
+@media(max-width:360px){.r-grid{gap:6px}.r-grid[data-size="s"] .r-cell{font-size:.66rem;padding:7px 3px}.r-stage{padding:9px}}
+.r-cell.hot,.r-cell.hot i{transition:none}
+.roue .r-opts{margin-top:14px}
+.r-stage.running .r-cell,.r-stage.running .r-cell i{transition:opacity .3s}

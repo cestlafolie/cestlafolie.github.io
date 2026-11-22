@@ -28,7 +28,7 @@
     <p class="tabs-t">Onglets</p>
     <button class="tab" data-tab="accueil"><i class="tab-ico home"><b></b></i>Accueil</button>
     <button class="tab" data-tab="vote"><i class="tab-ico"><b></b><b></b></i>Vote secret H</button>
-    <button class="tab" data-tab="roue"><i class="tab-ico wheel"><b></b></i>Roue du hasard</button>
+    <button class="tab" data-tab="roue"><i class="tab-ico wheel"><b></b></i>Tirage au sort</button>
   </nav>
   <p class="sidenav-foot">document confidentiel</p>
 </aside>
@@ -59,7 +59,7 @@
       </button>
       <button class="h-card h-wheel" data-go="roue">
         <span class="h-wheel-ico" aria-hidden="true"></span>
-        <span class="h-name">Roue du hasard</span>
+        <span class="h-name">Tirage au sort</span>
         <span class="h-desc">Ajoute les joueurs une fois, puis tire au sort une personne ou forme des équipes.</span>
         <span class="h-go">Ouvrir</span>
       </button>
@@ -113,18 +113,14 @@
   </section>
 
   <!-- ===== Module : roue du hasard ===== -->
-  <section class="module roue" id="mod-roue" data-title="Roue du hasard">
+  <section class="module roue" id="mod-roue" data-title="Tirage au sort">
     <div class="r-mode" role="tablist">
       <button class="r-mode-b" data-mode="solo">Individuel</button>
       <button class="r-mode-b" data-mode="teams">Équipes</button>
       <span class="r-mode-k" aria-hidden="true"></span>
     </div>
 
-    <div class="r-wheel-wrap">
-      <span class="r-pointer" aria-hidden="true"></span>
-      <svg class="r-wheel" id="rWheel" viewBox="-100 -100 200 200" aria-label="Roue"></svg>
-      <button class="r-spin" id="rSpin">Tourner</button>
-    </div>
+    <div class="r-stage" id="rStage"><div class="r-grid" id="rGrid"></div></div>
 
     <div class="r-opts" id="rOptsSolo">
       <label class="r-check"><input type="checkbox" id="rRemove"><span></span>Retirer la personne tirée</label>
@@ -137,6 +133,8 @@
         <button id="rTeamPlus" aria-label="Plus d'équipes">+</button>
       </div>
     </div>
+
+    <button class="r-go" id="rSpin">Lancer</button>
 
     <div class="reveal" id="rResultWrap"><div><div class="r-result" id="rResult"></div></div></div>
 
