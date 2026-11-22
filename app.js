@@ -48,7 +48,7 @@ function tweenText(el, to, fmt, ms = 450) {
     $('topTitle').textContent = title; document.title = title;
     document.body.dataset.tab = name;
     if (push) window.scrollTo(0, 0);
-    if (push && location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
+    if (push && location.hash.slice(1).split('/')[0] !== name) history.replaceState(null, '', '#' + name);
     close();
   }
   tabs.forEach(t => t.onclick = () => show(t.dataset.tab, true));
@@ -56,8 +56,10 @@ function tweenText(el, to, fmt, ms = 450) {
   $('burger').onclick = () => { side.classList.add('open'); scrim.classList.add('show'); };
   scrim.onclick = close;
   addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-  addEventListener('hashchange', () => show(location.hash.slice(1)));
-  show(location.hash.slice(1) || tabs[0].dataset.tab);
+  // l'adresse peut contenir une précision après « / » (ex. #mw/ABCD = rejoindre la partie ABCD)
+  const tabOf = () => decodeURIComponent(location.hash.slice(1)).split('/')[0];
+  addEventListener('hashchange', () => show(tabOf()));
+  show(tabOf() || tabs[0].dataset.tab);
 
   // Gestes : glisser depuis le bord gauche pour ouvrir, glisser le menu vers la gauche pour fermer
   let x0 = null, y0 = 0, dx = 0, mode = null;
@@ -92,10 +94,11 @@ function tweenText(el, to, fmt, ms = 450) {
 // surveillance toutes les 0,5 s. Chaque message n'est traité qu'une fois (identifiant unique).
 function liveTopic(url, { onMessage, onStatus, onReady }) {
   const seen = new Set(), links = [{}, {}];
-  let ready = false, readyT = null;
+  let ready = false, readyT = null, closed = false;
   const isOpen = l => l.es && l.es.readyState === 1;
   const status = () => onStatus && onStatus(links.some(isOpen) ? 'on' : navigator.onLine === false ? 'offline' : 'wait');
   function open(l) {
+    if (closed) return;
     if (l.es) l.es.close();
     l.last = Date.now();
     const es = l.es = new EventSource(url + '/sse?since=all');
@@ -123,20 +126,21 @@ function liveTopic(url, { onMessage, onStatus, onReady }) {
     };
   }
   const all = force => links.forEach(l => { if (force || !isOpen(l)) { l.fails = 0; open(l); } });
-  setInterval(() => {
-    if (document.hidden) return;
+  const watch = setInterval(() => {
+    if (document.hidden || closed) return;
     const now = Date.now();
     links.forEach(l => {
       if (!l.es || (l.es.readyState === 2 && now >= (l.retryAt || 0))) open(l);
       else if (l.es.readyState === 1 && now - l.last > 70000) open(l);
     });
   }, 500);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) all(false); });
-  addEventListener('online', () => all(true));
-  addEventListener('offline', status);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && !closed) all(false); });
+  addEventListener('online', () => { if (!closed) all(true); });
+  addEventListener('offline', () => { if (!closed) status(); });
   all(true);
   return {
     publish: obj => fetch(url, { method: 'POST', body: JSON.stringify(obj) }).then(r => { if (!r.ok) throw new Error(r.status); }),
     isReady: () => ready,
+    close: () => { closed = true; clearInterval(watch); clearTimeout(readyT); links.forEach(l => l.es && l.es.close()); },
   };
 }
