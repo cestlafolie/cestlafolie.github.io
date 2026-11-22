@@ -28,6 +28,7 @@
     <p class="tabs-t">Onglets</p>
     <button class="tab" data-tab="accueil"><i class="tab-ico home"><b></b></i>Accueil</button>
     <button class="tab" data-tab="vote"><i class="tab-ico"><b></b><b></b></i>Vote secret H</button>
+    <button class="tab" data-tab="roue"><i class="tab-ico wheel"><b></b></i>Roue du hasard</button>
   </nav>
   <p class="sidenav-foot">document confidentiel</p>
 </aside>
@@ -54,6 +55,12 @@
         <span class="h-stamp">Confidentiel</span>
         <span class="h-name">Vote secret H</span>
         <span class="h-desc">Oui ou non, à bulletin secret. Le résultat tombe quand tout le monde a voté.</span>
+        <span class="h-go">Ouvrir</span>
+      </button>
+      <button class="h-card h-wheel" data-go="roue">
+        <span class="h-wheel-ico" aria-hidden="true"></span>
+        <span class="h-name">Roue du hasard</span>
+        <span class="h-desc">Ajoute les joueurs une fois, puis tire au sort une personne ou forme des équipes.</span>
         <span class="h-go">Ouvrir</span>
       </button>
       <div class="h-card h-soon">
@@ -105,10 +112,50 @@
     </div></div>
   </section>
 
+  <!-- ===== Module : roue du hasard ===== -->
+  <section class="module roue" id="mod-roue" data-title="Roue du hasard">
+    <div class="r-mode" role="tablist">
+      <button class="r-mode-b" data-mode="solo">Individuel</button>
+      <button class="r-mode-b" data-mode="teams">Équipes</button>
+      <span class="r-mode-k" aria-hidden="true"></span>
+    </div>
+
+    <div class="r-wheel-wrap">
+      <span class="r-pointer" aria-hidden="true"></span>
+      <svg class="r-wheel" id="rWheel" viewBox="-100 -100 200 200" aria-label="Roue"></svg>
+      <button class="r-spin" id="rSpin">Tourner</button>
+    </div>
+
+    <div class="r-opts" id="rOptsSolo">
+      <label class="r-check"><input type="checkbox" id="rRemove"><span></span>Retirer la personne tirée</label>
+    </div>
+    <div class="r-opts" id="rOptsTeams">
+      <span class="r-lbl">Équipes</span>
+      <div class="r-stepper">
+        <button id="rTeamMinus" aria-label="Moins d'équipes">−</button>
+        <b id="rTeamN">2</b>
+        <button id="rTeamPlus" aria-label="Plus d'équipes">+</button>
+      </div>
+    </div>
+
+    <div class="reveal" id="rResultWrap"><div><div class="r-result" id="rResult"></div></div></div>
+
+    <div class="r-players">
+      <div class="r-players-h"><span>Joueurs <em id="rCount">0</em></span><button class="r-link" id="rBack">Remettre tout le monde</button></div>
+      <form class="r-add" id="rAdd" autocomplete="off">
+        <input id="rName" maxlength="24" placeholder="Prénom" enterkeyhint="done">
+        <button type="submit">Ajouter</button>
+      </form>
+      <div class="r-chips" id="rChips"></div>
+      <button class="r-link r-clear" id="rClear">Effacer la liste</button>
+    </div>
+  </section>
+
 </main>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="app.js"></script>
 <script src="vote.js"></script>
+<script src="roue.js"></script>
 </body>
 </html>
