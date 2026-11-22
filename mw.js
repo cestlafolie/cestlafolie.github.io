@@ -17,7 +17,7 @@ const MW_PAIRS = {
 };
 
 // La fabrique createUndercover() permet de lancer ce jeu plusieurs fois avec des mots différents
-// (Mystère White classique, Undercover spécial anime…). Chaque instance a ses propres données.
+// (Mystère White, et le jeu Anime qui a son propre onglet). Chaque instance a ses propres données et ses propres mots.
 function createUndercover(CFG) {
 const ROOT = CFG.root;
 const K = CFG.key;   // préfixe des données enregistrées et des canaux
