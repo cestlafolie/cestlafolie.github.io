@@ -81,7 +81,8 @@ function setup() {
       <div class="lg-role">${icon('villageois')}<span>Villageois</span><div class="lg-step"><b>${Math.max(0, v)}</b></div></div></div>
     ${n() >= 5 && !ok ? `<p class="lg-warn">${v < 0 ? 'Trop de rôles pour le nombre de joueurs.' : 'Il faut au moins 1 loup, et moins de loups que de villageois.'}</p>` : ''}
     <button class="lg-go" data-a="start"${ok ? '' : ' disabled'}>Distribuer les rôles</button>
-    <details class="lg-rules"><summary>Les rôles</summary>${['loup', 'villageois', ...SPECIAL].map(r => `<p>${icon(r, 'sm')}<b>${ROLES[r].n}</b> : ${ROLES[r].d}</p>`).join('')}</details>`;
+    <details class="lg-rules"><summary>Les rôles</summary>${['loup', 'villageois', ...SPECIAL].map(r => `<p>${icon(r, 'sm')}<b>${ROLES[r].n}</b> : ${ROLES[r].d}</p>`).join('')}</details>
+    <p class="lg-credit">Icônes : game-icons.net (Lorc, Delapouite, Skoll), licence CC BY 3.0</p>`;
 }
 
 function start() {
