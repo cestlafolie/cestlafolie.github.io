@@ -519,3 +519,5 @@ body[data-tab="anime"] .burger span{background:#f5f3ff}
 .tab.active{color:#fff;font-weight:800}
 .tab.active::before{left:-14px;top:16px;bottom:16px;width:3px;border-radius:0;background:#f2f2f2}
 .ti{display:none}
+.an-avatar.an-photo{overflow:hidden;background:#fff}
+.an-avatar.an-photo img{width:100%;height:100%;object-fit:cover;display:block}

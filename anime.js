@@ -11,6 +11,8 @@ const ANIME_PAIRS = {
   'Jujutsu Kaisen': [['Itadori','Megumi'],['Gojo','Geto'],['Sukuna','Mahito'],['Nobara','Maki'],['Nanami','Todo'],['Yuta','Inumaki']],
 };
 const COLORS = { 'Naruto': '#ff7a00', 'My Hero Academia': '#2ec27e', 'Dragon Ball Z': '#ffb400', 'One Piece': '#e5383b', 'L’Attaque des Titans': '#8d6e63', 'Demon Slayer': '#2a9d8f', 'Jujutsu Kaisen': '#5b5fef' };
+// images de personnages fournies (fichiers dans img/anime/) ; les autres gardent leur badge à initiales
+const PHOTOS = { 'Naruto': 'naruto.jpg' };
 const animeOf = name => Object.keys(ANIME_PAIRS).find(a => ANIME_PAIRS[a].some(p => p.includes(name)));
 const initials = n => n.split(/[\s-]+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -123,6 +125,7 @@ createUndercover({
   picture: w => {
     if (w === null) return '<img class="mw-pic" src="img/role-white.svg" alt="">';
     const a = animeOf(w);
+    if (PHOTOS[w]) return `<div class="an-avatar an-photo" style="--ac:${COLORS[a] || '#5b5fef'}"><img src="img/anime/${PHOTOS[w]}" alt=""></div>`;
     return `<div class="an-avatar" style="--ac:${COLORS[a] || '#5b5fef'}"><i>${esc(initials(w))}</i><em>${esc(a || '')}</em></div>`;
   },
 });
