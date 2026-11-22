@@ -509,3 +509,13 @@ body[data-tab="anime"] .burger span{background:#f5f3ff}
 .sidenav-foot{font:600 .74rem "Manrope",sans-serif;color:#4a5272;padding:0 10px}
 .scrim{background:rgba(5,8,18,.6);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
 .mark .mark-t{display:flex;width:auto;height:auto;border:none;transform:none;color:#fff;place-items:initial;font-size:1.12rem;white-space:nowrap}
+/* menu : version sobre (sans dégradés ni icônes) */
+.sidenav{background:#141414;border-right:1px solid #262626}
+.mark .mark-t{font:800 1.35rem "Manrope",sans-serif;letter-spacing:-.04em;color:#f2f2f2}
+.tabs{margin-top:40px;gap:0}
+.tabs-t{color:#6e6e6e;letter-spacing:.08em}
+.tab{min-height:52px;padding:0 10px;border-radius:0;border-bottom:1px solid #222;font:600 1.05rem "Manrope",sans-serif;color:#9a9a9a;background:none!important}
+.tab:active{color:#fff}
+.tab.active{color:#fff;font-weight:800}
+.tab.active::before{left:-14px;top:16px;bottom:16px;width:3px;border-radius:0;background:#f2f2f2}
+.ti{display:none}
