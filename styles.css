@@ -151,7 +151,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;-we
 .danger:active{background:#e0402f;color:var(--night);transform:scale(.98)}
 
 /* ===== Accueil : table de jeux (style propre au site) ===== */
-body[data-tab="accueil"]{background:radial-gradient(130% 90% at 50% 0%,#2b5a43 0%,#173426 55%,#0f241a 100%)}
+body[data-tab="accueil"]{background:radial-gradient(130% 90% at 50% 0%,#2f5394 0%,#18305e 55%,#0d1b3a 100%)}
 body[data-tab="accueil"] .live{visibility:hidden}
 body[data-tab="accueil"] .top-title{font:800 1.15rem "Fraunces",Georgia,serif;letter-spacing:0;text-transform:none}
 .home{padding:clamp(6px,2dvh,18px) 4px 0;color:#f6efe0}
