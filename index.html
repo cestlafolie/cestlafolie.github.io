@@ -31,6 +31,7 @@
     <button class="tab" data-tab="roue"><i class="ti"></i>Tirage au sort</button>
     <button class="tab" data-tab="mw"><i class="ti"></i>Mystère White</button>
     <button class="tab" data-tab="anime"><i class="ti"></i>Anime</button>
+    <button class="tab" data-tab="lg"><i class="ti"></i>Loup-Garou</button>
   </nav>
   <p class="sidenav-foot"></p>
 </aside>
@@ -75,6 +76,12 @@
         <span class="h-anime-ico" aria-hidden="true">アニメ</span>
         <span class="h-name">Anime</span>
         <span class="h-desc">Undercover avec les personnages de Naruto, My Hero Academia, Dragon Ball Z… et un quiz sur chaque anime.</span>
+        <span class="h-go">Ouvrir</span>
+      </button>
+      <button class="h-card h-lg" data-go="lg">
+        <span class="h-lg-moon" aria-hidden="true"></span>
+        <span class="h-name">Loup-Garou</span>
+        <span class="h-desc">Distribuez les rôles en secret, puis l’appli guide le meneur nuit après nuit.</span>
         <span class="h-go">Ouvrir</span>
       </button>
       <div class="h-card h-soon">
@@ -179,6 +186,11 @@
     <div class="an-pane an-pane-uc" id="anUc"></div>
   </section>
 
+  <!-- ===== Module : Loup-Garou ===== -->
+  <section class="module lg" id="mod-lg" data-title="Loup-Garou">
+    <div id="lgView"></div>
+  </section>
+
 </main>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -187,5 +199,6 @@
 <script src="roue.js"></script>
 <script src="mw.js"></script>
 <script src="anime.js"></script>
+<script src="lg.js"></script>
 </body>
 </html>

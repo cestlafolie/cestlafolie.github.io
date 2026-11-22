@@ -521,3 +521,88 @@ body[data-tab="anime"] .burger span{background:#f5f3ff}
 .ti{display:none}
 .an-avatar.an-photo{overflow:hidden;background:#fff}
 .an-avatar.an-photo img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* ===== Loup-Garou : nuit au village ===== */
+body[data-tab="lg"]{background:radial-gradient(90% 50% at 85% 0%,#2a3a6b 0%,#121a33 45%,#0a0f1f 100%);color:#e8ecf8}
+html:has(body[data-tab="lg"]){background:#0a0f1f}
+body[data-tab="lg"] .top-title{font:400 1.15rem "Archivo Black",sans-serif;text-transform:none;letter-spacing:-.01em;color:#e8ecf8}
+body[data-tab="lg"] .burger span{background:#e8ecf8}
+.lg{font-family:"Manrope",system-ui,sans-serif;color:#e8ecf8;--card:rgba(255,255,255,.06);--line:rgba(255,255,255,.12);--dim:#9aa5c4;--moon:#ffcf3f}
+.lg button{font-family:inherit}
+.lg-ico{width:44px;height:44px;flex:none}.lg-ico.big{width:84px;height:84px}.lg-ico.sm{width:28px;height:28px;vertical-align:middle}
+.lg-hero{display:flex;align-items:center;gap:14px;padding:6px 0 4px}
+.lg-hero h2{font:400 2rem/1 "Archivo Black",sans-serif}
+.lg-hero p{color:var(--dim);font-weight:600;margin-top:6px;line-height:1.35}
+.lg-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font:800 1.05rem "Manrope",sans-serif;margin:22px 0 10px}
+.lg-h em{font-style:normal;font-size:.8rem;background:#e8ecf8;color:#0a0f1f;border-radius:999px;padding:1px 9px}
+.lg-h small{font-weight:600;color:var(--dim);font-size:.8rem}
+.lg-add{display:flex;gap:8px}
+.lg-add input{-webkit-user-select:text;user-select:text;flex:1;min-width:0;height:50px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:#e8ecf8;padding:0 14px;font:600 16px "Manrope",sans-serif}
+.lg-add input:focus{outline:none;border-color:var(--moon)}
+.lg-add button{height:50px;padding:0 16px;border-radius:14px;background:var(--moon);color:#0a0f1f;font-weight:800}
+.lg-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.lg-chip{display:inline-flex;align-items:center;padding:6px 4px 6px 14px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-weight:700}
+.lg-chip button{width:30px;height:30px;color:var(--dim);font-size:1.1rem}
+.lg-muted{color:var(--dim);font-weight:600;font-size:.9rem;margin:8px 0}
+.lg-link{display:block;margin:12px auto 0;color:var(--dim);font-weight:700;font-size:.88rem;padding:8px;text-decoration:underline;text-underline-offset:3px}
+.lg-h .lg-link{display:inline;margin:0;padding:0;font-size:.78rem}
+.lg-roles{display:flex;flex-direction:column;gap:6px}
+.lg-role{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-weight:700}
+.lg-role .lg-ico{width:36px;height:36px}.lg-role span{flex:1}
+.lg-step{display:flex;align-items:center;gap:6px}
+.lg-step button{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.1);font-size:1.2rem;font-weight:800;color:#e8ecf8}
+.lg-step b{min-width:22px;text-align:center;font:400 1.15rem "Archivo Black",sans-serif}
+.lg-warn{color:#ff8a8a;font-weight:700;font-size:.88rem;margin-top:10px}
+.lg-go{display:block;width:100%;height:56px;margin-top:16px;border-radius:16px;background:var(--moon);color:#0a0f1f;font:400 1.05rem "Archivo Black",sans-serif;box-shadow:0 10px 30px rgba(255,207,63,.2)}
+.lg-go:disabled{opacity:.35;box-shadow:none}
+.lg-go:active:not(:disabled){transform:scale(.98)}
+.lg-rules{margin-top:18px;padding:12px 14px;border-radius:14px;background:var(--card);border:1px solid var(--line)}
+.lg-rules summary{font-weight:800;cursor:pointer}
+.lg-rules p{margin-top:10px;font-size:.9rem;line-height:1.45;color:#cdd4ea}
+.lg-rules p .lg-ico{margin-right:8px}
+.lg-k{font:800 .76rem "Manrope",sans-serif;text-transform:uppercase;letter-spacing:.12em;color:var(--dim);margin:6px 0}
+.lg-pass{margin-top:30px;padding:34px 16px;text-align:center;border-radius:22px;background:linear-gradient(160deg,#2a3a6b,#141d3b);border:1px solid var(--line)}
+.lg-pass span{color:var(--dim);font-weight:700}
+.lg-pass b{display:block;font:400 clamp(2rem,11vw,2.8rem) "Archivo Black",sans-serif;margin-top:6px;word-break:break-word}
+.lg-card{margin-top:12px;padding:26px 18px;text-align:center;border-radius:22px;border:1px solid var(--line);animation:mwpop .45s cubic-bezier(.3,1.6,.5,1)}
+.lg-card b{display:block;font:400 2rem "Archivo Black",sans-serif;margin:8px 0}
+.lg-card p{color:#cdd4ea;font-weight:600;line-height:1.45}
+.lg-c-village{background:linear-gradient(160deg,#1f4d3a,#10291f)}
+.lg-c-loups{background:linear-gradient(160deg,#5a1a24,#2a0b10)}
+.lg-night,.lg-day{padding:18px 16px;border-radius:20px;margin-top:4px;position:relative;overflow:hidden}
+.lg-night{background:linear-gradient(160deg,#1b2550,#0b1027);border:1px solid var(--line)}
+.lg-night::after{content:"";position:absolute;right:18px;top:14px;width:38px;height:38px;border-radius:50%;box-shadow:-9px 6px 0 0 var(--moon)}
+.lg-day{background:linear-gradient(160deg,#ffcf3f,#f59e0b);color:#2a1a00}
+.lg-night span,.lg-day span{font:800 .76rem "Manrope",sans-serif;text-transform:uppercase;letter-spacing:.12em;opacity:.75}
+.lg-night b,.lg-day b{display:block;font:400 1.5rem "Archivo Black",sans-serif;margin-top:4px}
+.lg-dots{display:flex;gap:6px;justify-content:center;margin:12px 0}
+.lg-dots i{width:30px;height:5px;border-radius:3px;background:rgba(255,255,255,.15)}
+.lg-dots i.done{background:var(--dim)}.lg-dots i.on{background:var(--moon)}
+.lg-stepbox{display:flex;align-items:center;gap:14px;margin:10px 0 12px;padding:14px;border-radius:16px;background:var(--card);border:1px solid var(--line)}
+.lg-stepbox b{font:800 1.05rem "Manrope",sans-serif}.lg-stepbox p{color:#cdd4ea;font-weight:600;font-size:.92rem;font-style:italic;margin-top:2px}
+.lg-pick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.lg-pick button{min-height:50px;border-radius:12px;background:var(--card);border:1.5px solid var(--line);color:#e8ecf8;font-weight:800;font-size:.95rem;padding:6px;overflow:hidden;text-overflow:ellipsis}
+.lg-pick button.on{background:var(--moon);border-color:var(--moon);color:#0a0f1f}
+.lg-reveal{display:flex;align-items:center;gap:10px;margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(124,77,255,.18);border:1px solid rgba(124,77,255,.5);font-weight:600}
+.lg-reveal.lg-bad{background:rgba(229,56,59,.18);border-color:rgba(229,56,59,.5)}
+.lg-opt{display:flex;align-items:center;gap:10px;width:100%;margin-top:12px;padding:12px 14px;border-radius:14px;background:var(--card);border:1.5px solid var(--line);color:#e8ecf8;font-weight:800;text-align:left}
+.lg-opt.on{background:#1fa774;border-color:#1fa774}
+.lg-label{font-weight:800;font-size:.85rem;margin:14px 0 8px;color:#cdd4ea}
+.lg-death{display:flex;align-items:center;gap:12px;margin-top:12px;padding:14px;border-radius:16px;background:rgba(229,56,59,.15);border:1px solid rgba(229,56,59,.4);font-weight:600;animation:mwpop .4s}
+.lg-death.lg-none{background:rgba(31,167,116,.15);border-color:rgba(31,167,116,.45);justify-content:center;font-weight:800}
+.lg-list{list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.lg-list li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:var(--card);font-weight:700}
+.lg-list li span{flex:1}.lg-list li b{font-size:.82rem;color:#cdd4ea}
+.lg-list li.out{opacity:.45}.lg-list li.out span{text-decoration:line-through}
+.lg-end{margin-top:6px;padding:26px 16px;text-align:center;border-radius:22px;border:1px solid var(--line);animation:mwpop .5s cubic-bezier(.3,1.6,.5,1)}
+.lg-end span{font:800 .76rem "Manrope",sans-serif;text-transform:uppercase;letter-spacing:.12em;opacity:.8;display:block;margin-top:8px}
+.lg-end b{display:block;font:400 clamp(1.7rem,8vw,2.3rem)/1.1 "Archivo Black",sans-serif;margin:6px 0}
+.lg-end em{font-style:normal;font-weight:700;color:#cdd4ea}
+.lg-e-village{background:linear-gradient(160deg,#1f4d3a,#10291f)}.lg-e-loups{background:linear-gradient(160deg,#5a1a24,#2a0b10)}
+.lg-e-amoureux{background:linear-gradient(160deg,#7a1f45,#3a0c20)}.lg-e-personne{background:#1a1f33}
+.h-lg{background:linear-gradient(160deg,#1b2550,#0b1027);color:#e8ecf8;border:1px solid rgba(255,255,255,.12);box-shadow:0 14px 30px rgba(0,0,0,.4);transform:rotate(-.5deg);position:relative;overflow:hidden}
+.h-lg:active{transform:rotate(0) scale(.97)}
+.h-lg .h-name{font:400 1.5rem "Archivo Black",sans-serif}
+.h-lg .h-desc{font-family:"Manrope",sans-serif;font-weight:600;color:#b8c2de;opacity:1}
+.h-lg .h-go{background:#ffcf3f;color:#0a0f1f;font-family:"Manrope",sans-serif;text-transform:none;letter-spacing:.02em;font-size:.88rem}
+.h-lg-moon{width:40px;height:40px;border-radius:50%;box-shadow:-10px 7px 0 0 #ffcf3f;margin:0 0 6px 10px}
