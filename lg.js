@@ -24,16 +24,31 @@ const I = {   // silhouettes d'une seule couleur (currentColor), style tampon
 const icon = (r, cls = '') => `<img class="lg-ico lg-i-${r} ${cls}" src="img/lg/${r}.webp" alt="">`;
 const ROLES = {
   loup: { n: 'Loup-Garou', camp: 'loups', d: 'Chaque nuit, avec les autres loups, tu choisis une victime. Le jour, fais-toi passer pour un villageois.' },
+  grandloup: { n: 'Grand Méchant Loup', camp: 'loups', d: 'Tu chasses avec les loups. Tant qu’aucun loup n’est mort, tu dévores en plus une seconde victime, seul, chaque nuit.' },
+  loupblanc: { n: 'Loup Blanc', camp: 'seul', d: 'Tu te réveilles avec les loups, mais tu joues seul : une nuit sur deux, tu peux dévorer un loup. Tu gagnes si tu es le dernier survivant.' },
   villageois: { n: 'Villageois', camp: 'village', d: 'Tu n’as pas de pouvoir. Écoute, observe et vote pour éliminer les loups.' },
   voyante: { n: 'Voyante', camp: 'village', d: 'Chaque nuit, tu découvres le rôle d’un joueur de ton choix.' },
   sorciere: { n: 'Sorcière', camp: 'village', d: 'Tu as une potion de vie pour sauver la victime des loups, et une potion de mort pour éliminer quelqu’un. Une seule fois chacune.' },
   chasseur: { n: 'Chasseur', camp: 'village', d: 'Si tu meurs, tu tires une dernière balle et tu emportes un joueur avec toi.' },
   cupidon: { n: 'Cupidon', camp: 'village', d: 'La première nuit, tu désignes deux amoureux. Si l’un meurt, l’autre meurt de chagrin.' },
-  petite: { n: 'Petite fille', camp: 'village', d: 'La nuit, tu peux entrouvrir les yeux pour espionner les loups… sans te faire repérer.' },
+  petite: { n: 'Petite Fille', camp: 'village', d: 'La nuit, tu peux entrouvrir les yeux pour espionner les loups… sans te faire repérer.' },
+  maire: { n: 'Maire', camp: 'village', d: 'Ta voix compte double lors des votes du village. Si tu meurs, tu désignes ton successeur.' },
+  garde: { n: 'Garde', camp: 'village', d: 'Chaque nuit, tu protèges un joueur (toi compris) contre les loups. Jamais le même deux nuits de suite.' },
+  voleur: { n: 'Voleur', camp: 'village', d: 'La première nuit, tu peux voler le rôle d’un joueur. Il devient alors simple Villageois.' },
+  idiot: { n: 'Idiot du Village', camp: 'village', d: 'Si le village vote contre toi, tu es épargné : ton rôle est révélé, mais tu ne peux plus voter.' },
+  corbeau: { n: 'Corbeau', camp: 'village', d: 'Chaque nuit, tu désignes un joueur : il aura 2 voix de plus contre lui au vote du lendemain.' },
+  sauvage: { n: 'Enfant Sauvage', camp: 'village', d: 'La première nuit, tu choisis un modèle. S’il meurt, tu deviens un Loup-Garou.' },
+  ancetre: { n: 'Ancêtre', camp: 'village', d: 'Tu survis à la première attaque des loups.' },
+  bouc: { n: 'Bouc Émissaire', camp: 'village', d: 'En cas d’égalité au vote du village, c’est toi qui es éliminé.' },
 };
-const SPECIAL = ['voyante', 'sorciere', 'chasseur', 'cupidon', 'petite'];
+const SPECIAL = ['voyante', 'sorciere', 'chasseur', 'cupidon', 'petite', 'garde', 'maire', 'voleur', 'idiot', 'corbeau', 'sauvage', 'ancetre', 'bouc'];
+const WOLVES = ['loup', 'grandloup', 'loupblanc'];
 function suggest(n) {
-  return { loup: n <= 6 ? 1 : n <= 11 ? 2 : n <= 16 ? 3 : 4, voyante: 1, sorciere: n >= 6 ? 1 : 0, chasseur: n >= 7 ? 1 : 0, cupidon: n >= 8 ? 1 : 0, petite: n >= 9 ? 1 : 0 };
+  const c = { loup: n <= 6 ? 1 : n <= 11 ? 2 : n <= 16 ? 3 : 4, grandloup: 0, loupblanc: 0 };
+  SPECIAL.forEach(r => c[r] = 0);
+  c.voyante = 1; c.sorciere = n >= 6 ? 1 : 0; c.chasseur = n >= 7 ? 1 : 0; c.cupidon = n >= 8 ? 1 : 0; c.petite = n >= 9 ? 1 : 0;
+  c.garde = n >= 10 ? 1 : 0; c.maire = n >= 11 ? 1 : 0;
+  return c;
 }
 
 // ---------- état ----------
@@ -41,11 +56,13 @@ let S = store.get(KEY, null) || { players: [], cfg: null, custom: false, g: null
 if (!('mode' in S)) S.mode = null;   // null = choix, 'local' = un téléphone, 'host' = meneur en ligne, 'player' = joueur en ligne
 const save = () => store.set(KEY, S);
 const n = () => S.players.length;
-const cfg = () => (S.custom && S.cfg) ? S.cfg : suggest(n());
+const cfg = () => (S.custom && S.cfg) ? Object.assign(suggest(0), Object.fromEntries(Object.keys(suggest(0)).map(k => [k, 0])), S.cfg) : suggest(n());
 const nVill = c => n() - Object.values(c).reduce((a, b) => a + b, 0);
 const alive = () => S.g.p.map((p, i) => p.alive ? i : -1).filter(i => i >= 0);
 const nameOf = i => S.g.p[i].name;
 const roleOf = i => S.g.p[i].role;
+const isWolf = i => WOLVES.includes(roleOf(i)) || (roleOf(i) === 'sauvage' && S.g.wild);
+const wolfCount = c => WOLVES.reduce((t, r) => t + (c[r] || 0), 0);
 
 // ---------- rendu ----------
 function render() {
@@ -53,7 +70,7 @@ function render() {
   if (S.mode === 'player') return playerView();
   const g = S.g;
   if (!g) return setup();
-  ({ deal, cards, night, morning, hunter, day, verdict, end })[g.phase]();
+  ({ deal, cards, night, morning, hunter, mayor, day, verdict, end })[g.phase]();
   if (S.mode === 'host') pushStatus();
 }
 function home() {
@@ -66,7 +83,7 @@ function home() {
 function setup() {
   const host = S.mode === 'host';
   if (host) S.players = H.players.map(p => p.name);   // d'abord compter les joueurs connectés
-  const c = cfg(), v = nVill(c), ok = n() >= 5 && v >= 0 && c.loup >= 1 && c.loup < n() - c.loup;
+  const c = cfg(), v = nVill(c), w = wolfCount(c), ok = n() >= 5 && v >= 0 && w >= 1 && w < n() - w;
   const url = host ? location.origin + location.pathname + '#lg/' + H.code : '';
   V.innerHTML = `<button class="lg-back" data-a="m-back">‹ Changer de mode</button>
     ${host ? `<p class="lg-net ${H.net || ''}"><i></i>${H.net === 'on' ? 'Connecté' : 'Connexion…'}</p>
@@ -77,11 +94,11 @@ function setup() {
     <form class="lg-add" data-f="add" autocomplete="off"><input name="n" maxlength="16" placeholder="Prénom" enterkeyhint="done"><button>Ajouter</button></form>
     <div class="lg-chips">${S.players.map((p, i) => `<span class="lg-chip">${esc(p)}<button data-a="del" data-i="${i}" aria-label="Supprimer">×</button></span>`).join('') || '<p class="lg-muted">Au moins 5 joueurs (dont le meneur ne fait pas partie).</p>'}</div>`}
     <h3 class="lg-h">Rôles ${S.custom ? '<button class="lg-link" data-a="auto">revenir aux rôles conseillés</button>' : '<small>conseillés pour ' + n() + ' joueurs</small>'}</h3>
-    <div class="lg-roles">${['loup', ...SPECIAL].map(r => `<div class="lg-role">${icon(r)}<span>${ROLES[r].n}</span><div class="lg-step"><button data-a="r-" data-r="${r}">−</button><b>${c[r]}</b><button data-a="r+" data-r="${r}">+</button></div></div>`).join('')}
+    <div class="lg-roles">${[...WOLVES, ...SPECIAL].map(r => `<div class="lg-role">${icon(r)}<span>${ROLES[r].n}</span><div class="lg-step"><button data-a="r-" data-r="${r}">−</button><b>${c[r]}</b><button data-a="r+" data-r="${r}">+</button></div></div>`).join('')}
       <div class="lg-role">${icon('villageois')}<span>Villageois</span><div class="lg-step"><b>${Math.max(0, v)}</b></div></div></div>
     ${n() >= 5 && !ok ? `<p class="lg-warn">${v < 0 ? 'Trop de rôles pour le nombre de joueurs.' : 'Il faut au moins 1 loup, et moins de loups que de villageois.'}</p>` : ''}
     <button class="lg-go" data-a="start"${ok ? '' : ' disabled'}>Distribuer les rôles</button>
-    <details class="lg-rules"><summary>Les rôles</summary>${['loup', 'villageois', ...SPECIAL].map(r => `<p>${icon(r, 'sm')}<b>${ROLES[r].n}</b> : ${ROLES[r].d}</p>`).join('')}</details>`;
+    <details class="lg-rules"><summary>Les rôles</summary>${[...WOLVES, 'villageois', ...SPECIAL].map(r => `<p>${icon(r, 'sm')}<b>${ROLES[r].n}</b> : ${ROLES[r].d}</p>`).join('')}</details>`;
 }
 
 function start() {
@@ -90,14 +107,15 @@ function start() {
   while (deck.length < n()) deck.push('villageois');
   const roles = shuffle(deck);
   if (S.mode === 'host') return hostStart(roles);
-  S.g = { phase: 'deal', di: 0, shown: false, night: 1, step: 0, p: S.players.map((name, i) => ({ name, role: roles[i], alive: true })),
-    lovers: null, life: true, poison: true, victim: null, saved: false, poisoned: null, seen: null, log: [], dead: [], queue: [], after: null, winner: null };
+  S.g = newGame(S.players, roles, 'deal');
   save(); render();
 }
 
 function newGame(names, roles, phase) {
   return { phase, di: 0, shown: false, night: 1, step: 0, p: names.map((name, i) => ({ name, role: roles[i], alive: true })),
-    lovers: null, life: true, poison: true, victim: null, saved: false, poisoned: null, seen: null, log: [], dead: [], queue: [], after: null, winner: null };
+    lovers: null, life: true, poison: true, victim: null, saved: false, poisoned: null, seen: null, log: [], dead: [], queue: [], after: null, winner: null,
+    guard: null, lastGuard: null, raven: null, ravenNext: null, model: null, wild: false, stolen: false, gmVictim: null, lbVictim: null,
+    ancUsed: false, idiotOut: false, wolfDied: false, mayorIdx: null, notes: [] };
 }
 function cards() {
   const g = S.g;
@@ -122,84 +140,137 @@ function deal() {
 const has = r => S.g.p.some(p => p.alive && p.role === r);
 function steps() {
   const g = S.g, s = [];
+  if (g.night === 1 && (has('voleur') || g.stolen)) s.push('voleur');
   if (g.night === 1 && S.g.p.some(p => p.role === 'cupidon')) s.push('cupidon');
+  if (g.night === 1 && has('sauvage')) s.push('sauvage');
+  if (has('garde')) s.push('garde');
   if (has('voyante')) s.push('voyante');
+  if (has('corbeau')) s.push('corbeau');
   s.push('loups');
+  if (has('grandloup') && !g.wolfDied) s.push('grandloup');
+  if (has('loupblanc') && g.night % 2 === 0 && alive().some(i => isWolf(i) && roleOf(i) !== 'loupblanc')) s.push('loupblanc');
   if (has('sorciere') && (g.life || g.poison)) s.push('sorciere');
   return s;
 }
 function pick(list, act, sel, label) {
   return `<div class="lg-pick">${list.map(i => `<button data-a="${act}" data-i="${i}" class="${(Array.isArray(sel) ? sel.includes(i) : sel === i) ? 'on' : ''}">${esc(nameOf(i))}</button>`).join('')}</div>${label || ''}`;
 }
+const box = (r, title, say) => `<div class="lg-stepbox">${icon(r)}<div><b>${title}</b><p>« ${say} »</p></div></div>`;
+const nextBtn = (txt, ok = true) => `<button class="lg-go" data-a="next"${ok ? '' : ' disabled'}>${txt}</button>`;
 function night() {
   const g = S.g, st = steps(), cur = st[g.step];
   const head = `<div class="lg-night"><span>Nuit ${g.night}</span><b>Le village s’endort…</b></div><div class="lg-dots">${st.map((x, k) => `<i class="${k < g.step ? 'done' : k === g.step ? 'on' : ''}"></i>`).join('')}</div>`;
+  const al = alive(), victims = [g.victim, g.gmVictim].filter(x => x !== null);
   let body = '';
-  if (cur === 'cupidon') {
+  if (cur === 'voleur') {
+    body = box('voleur', 'Le Voleur se réveille', 'Voleur, veux-tu voler le rôle d’un joueur ?') +
+      pick(al.filter(i => roleOf(i) !== 'voleur'), 'steal', g.tmpSteal ?? null) + nextBtn(g.tmpSteal != null ? 'Voler ce rôle' : 'Ne rien voler');
+  } else if (cur === 'cupidon') {
     const sel = g.tmp || [];
-    body = `<div class="lg-stepbox">${icon('cupidon')}<div><b>Cupidon se réveille</b><p>« Cupidon, désigne les deux amoureux. »</p></div></div>
-      ${pick(alive(), 'tmp2', sel)}<button class="lg-go" data-a="cupi-ok"${sel.length === 2 ? '' : ' disabled'}>Valider les amoureux</button>
-      <p class="lg-muted">Puis : « Les amoureux, ouvrez les yeux et reconnaissez-vous. »</p>`;
+    body = box('cupidon', 'Cupidon se réveille', 'Cupidon, désigne les deux amoureux.') +
+      pick(al, 'tmp2', sel) + `<button class="lg-go" data-a="cupi-ok"${sel.length === 2 ? '' : ' disabled'}>Valider les amoureux</button>
+      <div class="lg-lovers">${icon('amoureux')}<p class="lg-muted">Puis : « Les amoureux, ouvrez les yeux et reconnaissez-vous. »</p></div>`;
+  } else if (cur === 'sauvage') {
+    body = box('sauvage', 'L’Enfant Sauvage se réveille', 'Enfant Sauvage, choisis ton modèle.') +
+      pick(al.filter(i => roleOf(i) !== 'sauvage'), 'model', g.model) + nextBtn('L’Enfant Sauvage se rendort', g.model !== null);
+  } else if (cur === 'garde') {
+    body = box('garde', 'Le Garde se réveille', 'Garde, qui veux-tu protéger cette nuit ?') +
+      pick(al.filter(i => i !== g.lastGuard), 'guard', g.guard) +
+      (g.lastGuard !== null ? `<p class="lg-muted">${esc(nameOf(g.lastGuard))} a été protégé la nuit dernière : impossible deux fois de suite.</p>` : '') + nextBtn('Le Garde se rendort', g.guard !== null);
   } else if (cur === 'voyante') {
-    body = `<div class="lg-stepbox">${icon('voyante')}<div><b>La Voyante se réveille</b><p>« Voyante, de qui veux-tu connaître le rôle ? »</p></div></div>
-      ${pick(alive().filter(i => roleOf(i) !== 'voyante'), 'seer', g.seen)}
-      ${g.seen !== null ? `<div class="lg-reveal">${icon(roleOf(g.seen), 'sm')}<span>${esc(nameOf(g.seen))} est <b>${ROLES[roleOf(g.seen)].n}</b></span></div><p class="lg-muted">Montre-lui la carte du doigt, sans parler.</p><button class="lg-go" data-a="next">Suivant</button>` : ''}`;
+    body = box('voyante', 'La Voyante se réveille', 'Voyante, de qui veux-tu connaître le rôle ?') +
+      pick(al.filter(i => roleOf(i) !== 'voyante'), 'seer', g.seen) +
+      (g.seen !== null ? `<div class="lg-reveal">${icon(roleOf(g.seen), 'sm')}<span>${esc(nameOf(g.seen))} est <b>${ROLES[roleOf(g.seen)].n}</b>${roleOf(g.seen) === 'sauvage' && g.wild ? ' (devenu loup)' : ''}</span></div><p class="lg-muted">Montre-lui la carte du doigt, sans parler.</p>` + nextBtn('Suivant') : '');
+  } else if (cur === 'corbeau') {
+    body = box('corbeau', 'Le Corbeau se réveille', 'Corbeau, qui désignes-tu ? (facultatif)') +
+      pick(al.filter(i => roleOf(i) !== 'corbeau'), 'raven', g.raven) + nextBtn('Le Corbeau se rendort');
   } else if (cur === 'loups') {
-    body = `<div class="lg-stepbox">${icon('loup')}<div><b>Les Loups-Garous se réveillent</b><p>« Loups-Garous, choisissez votre victime. »</p></div></div>
-      ${pick(alive().filter(i => roleOf(i) !== 'loup'), 'wolf', g.victim)}
-      <button class="lg-go" data-a="next"${g.victim !== null ? '' : ' disabled'}>Les loups se rendorment</button>`;
+    body = box('loup', 'Les Loups-Garous se réveillent', 'Loups-Garous, choisissez votre victime.') +
+      pick(al.filter(i => !isWolf(i)), 'wolf', g.victim) + nextBtn('Les loups se rendorment', g.victim !== null);
+  } else if (cur === 'grandloup') {
+    body = box('grandloup', 'Le Grand Méchant Loup se réveille', 'Grand Méchant Loup, choisis une seconde victime.') +
+      pick(al.filter(i => !isWolf(i) && i !== g.victim), 'gm', g.gmVictim) + nextBtn('Le Grand Méchant Loup se rendort');
+  } else if (cur === 'loupblanc') {
+    body = box('loupblanc', 'Le Loup Blanc se réveille', 'Loup Blanc, veux-tu dévorer un loup ? (facultatif)') +
+      pick(al.filter(i => isWolf(i) && roleOf(i) !== 'loupblanc'), 'lb', g.lbVictim) + nextBtn('Le Loup Blanc se rendort');
   } else if (cur === 'sorciere') {
-    const v = g.victim;
-    body = `<div class="lg-stepbox">${icon('sorciere')}<div><b>La Sorcière se réveille</b><p>« Sorcière, voici la victime des loups. »</p></div></div>
-      <div class="lg-reveal lg-bad"><span>Victime : <b>${esc(nameOf(v))}</b></span></div>
-      ${g.life ? `<button class="lg-opt${g.saved ? ' on' : ''}" data-a="save">${icon('sorciere', 'sm')} Potion de vie : ${g.saved ? 'elle la sauve' : 'la sauver ?'}</button>` : '<p class="lg-muted">Potion de vie déjà utilisée.</p>'}
-      ${g.poison ? `<p class="lg-label">Potion de mort : tuer quelqu’un ? (facultatif)</p>${pick(alive().filter(i => roleOf(i) !== 'sorciere'), 'poison', g.poisoned)}` : '<p class="lg-muted">Potion de mort déjà utilisée.</p>'}
-      <button class="lg-go" data-a="next">La Sorcière se rendort</button>`;
+    body = box('sorciere', 'La Sorcière se réveille', 'Sorcière, voici la victime des loups.') +
+      `<div class="lg-reveal lg-bad"><span>Victime${victims.length > 1 ? 's' : ''} : <b>${victims.map(i => esc(nameOf(i))).join(' et ')}</b></span></div>` +
+      (g.life ? `<button class="lg-opt${g.saved ? ' on' : ''}" data-a="save">${icon('sorciere', 'sm')} Potion de vie : ${g.saved ? 'elle sauve ' + esc(nameOf(g.victim)) : 'sauver ' + esc(nameOf(g.victim)) + ' ?'}</button>` : '<p class="lg-muted">Potion de vie déjà utilisée.</p>') +
+      (g.poison ? `<p class="lg-label">Potion de mort : tuer quelqu’un ? (facultatif)</p>${pick(al.filter(i => roleOf(i) !== 'sorciere'), 'poison', g.poisoned)}` : '<p class="lg-muted">Potion de mort déjà utilisée.</p>') +
+      nextBtn('La Sorcière se rendort');
   }
   V.innerHTML = head + body + `<button class="lg-link" data-a="quit">Arrêter la partie</button>`;
 }
+function stepDone(cur) {   // effets immédiats à la fin d'une étape
+  const g = S.g;
+  if (cur === 'voleur' && g.tmpSteal != null) {
+    const t = g.tmpSteal, me = g.p.findIndex(p => p.alive && p.role === 'voleur');
+    g.p[me].role = g.p[t].role; g.p[t].role = 'villageois'; g.stolen = true;
+    if (S.mode === 'host') resendCards([me, t]);
+  }
+  g.tmpSteal = null;
+}
 function endNight() {
   const g = S.g, deaths = [];
-  if (g.victim !== null && !g.saved) deaths.push(g.victim);
-  if (g.saved) g.life = false;
+  g.notes = [];
+  const attack = v => {   // attaque des loups sur v
+    if (v === null) return;
+    if (g.guard === v) return;   // protégé par le Garde (secret)
+    if (roleOf(v) === 'ancetre' && !g.ancUsed) { g.ancUsed = true; return; }   // l'Ancêtre survit une fois (secret)
+    deaths.push(v);
+  };
+  if (!g.saved) attack(g.victim); else g.life = false;
+  attack(g.gmVictim);
+  if (g.lbVictim !== null) deaths.push(g.lbVictim);
   if (g.poisoned !== null) { deaths.push(g.poisoned); g.poison = false; }
-  g.victim = null; g.saved = false; g.poisoned = null; g.seen = null; g.tmp = null; g.step = 0;
+  g.ravenNext = g.raven;
+  g.lastGuard = g.guard;
+  g.victim = null; g.gmVictim = null; g.lbVictim = null; g.saved = false; g.poisoned = null; g.seen = null; g.tmp = null; g.guard = null; g.raven = null; g.step = 0;
   g.dead = []; g.queue = [...new Set(deaths)]; g.after = 'day';
   resolveDeaths();
 }
-// applique les morts en file (amoureux, chasseur), puis passe à la suite
+// applique les morts en file (amoureux, chasseur, enfant sauvage, maire), puis passe à la suite
 function resolveDeaths() {
   const g = S.g;
   while (g.queue.length) {
     const i = g.queue.shift();
     if (!g.p[i].alive) continue;
     g.p[i].alive = false; g.dead.push(i);
+    if (isWolf(i)) g.wolfDied = true;
     if (g.lovers && g.lovers.includes(i)) { const o = g.lovers.find(x => x !== i); if (g.p[o].alive) g.queue.push(o); }
+    if (g.model === i && !g.wild && has('sauvage')) { g.wild = true; if (S.mode === 'host') resendCards([g.p.findIndex(p => p.role === 'sauvage')]); }
     if (g.p[i].role === 'chasseur') { g.hunterFrom = g.phase; g.phase = 'hunter'; g.hunterI = i; save(); return render(); }
+    if ((g.mayorIdx == null ? g.p[i].role === 'maire' : g.mayorIdx === i) && alive().length) { g.mayorFrom = g.phase; g.phase = 'mayor'; g.mayorI = i; save(); return render(); }
   }
   const w = winner(); if (w) { g.winner = w; g.phase = 'end'; save(); return render(); }
-  g.phase = g.after === 'day' ? 'morning' : g.dead.length ? 'verdict' : 'night';
+  g.phase = g.after === 'day' ? 'morning' : (g.dead.length || g.notes.length) ? 'verdict' : 'night';
   if (g.phase === 'night') { g.night++; g.step = 0; }
   save(); render();
 }
 function winner() {
-  const g = S.g, al = alive(), wolves = al.filter(i => roleOf(i) === 'loup').length;
-  if (g.lovers && al.length === 2 && al.every(i => g.lovers.includes(i)) && roleOf(g.lovers[0]) === 'loup' !== (roleOf(g.lovers[1]) === 'loup')) return 'amoureux';
+  const g = S.g, al = alive(), W = al.filter(isWolf), lb = al.find(i => roleOf(i) === 'loupblanc');
   if (!al.length) return 'personne';
-  if (wolves === 0) return 'village';
-  if (wolves >= al.length - wolves) return 'loups';
+  if (g.lovers && al.length === 2 && al.every(i => g.lovers.includes(i)) && isWolf(g.lovers[0]) !== isWolf(g.lovers[1])) return 'amoureux';
+  if (al.length === 1 && lb !== undefined) return 'loupblanc';
+  if (W.length === 0) return 'village';
+  const vill = al.length - W.length;
+  if (lb === undefined && W.length >= vill) return 'loups';
+  if (lb !== undefined && vill === 0 && W.length === 1) return 'loupblanc';
   return null;
 }
 function morning() {
   const g = S.g;
   V.innerHTML = `<div class="lg-day"><span>Jour ${g.night}</span><b>Le village se réveille</b></div>
     ${g.dead.length ? g.dead.map(i => `<div class="lg-death">${icon(roleOf(i), 'sm')}<span><b>${esc(nameOf(i))}</b> ne se réveille pas. C’était : <b>${ROLES[roleOf(i)].n}</b></span></div>`).join('') : '<div class="lg-death lg-none">Personne n’est mort cette nuit.</div>'}
+    ${(g.notes || []).map(t => `<div class="lg-note">${esc(t)}</div>`).join('')}
     <button class="lg-go" data-a="to-day">Passer au débat et au vote</button>`;
 }
 function verdict() {
   const g = S.g;
   V.innerHTML = `<div class="lg-day"><span>Jour ${g.night}</span><b>Le village a tranché</b></div>
     ${g.dead.map(i => `<div class="lg-death">${icon(roleOf(i), 'sm')}<span><b>${esc(nameOf(i))}</b> quitte le village. C\u2019était : <b>${ROLES[roleOf(i)].n}</b></span></div>`).join('')}
+    ${(g.notes || []).map(t => `<div class="lg-note">${esc(t)}</div>`).join('')}
     <button class="lg-go" data-a="to-night">La nuit tombe</button>`;
 }
 function hunter() {
@@ -211,20 +282,33 @@ function day() {
   const g = S.g;
   V.innerHTML = `<div class="lg-day"><span>Jour ${g.night}</span><b>Le village vote</b></div>
     <p class="lg-muted">Débattez, puis votez à main levée. Touchez le joueur éliminé.</p>
+    ${dayNotes()}
     ${pick(alive(), 'lynch', null)}
-    <button class="lg-link" data-a="nolynch">Égalité : personne n’est éliminé</button>
+    <button class="lg-link" data-a="nolynch">${has('bouc') ? 'Égalité : le Bouc Émissaire est éliminé' : 'Égalité : personne n\u2019est éliminé'}</button>
     ${statusHTML()}`;
+}
+function dayNotes() {
+  const g = S.g, t = [];
+  const m = g.mayorIdx != null ? (g.p[g.mayorIdx].alive ? g.mayorIdx : -1) : g.p.findIndex(p => p.alive && p.role === 'maire'); if (m >= 0) t.push(`${icon('maire', 'sm')} La voix de <b>${esc(nameOf(m))}</b> (Maire) compte double.`);
+  if (g.ravenNext !== null && g.p[g.ravenNext]?.alive) t.push(`${icon('corbeau', 'sm')} Le Corbeau ajoute 2 voix contre <b>${esc(nameOf(g.ravenNext))}</b>.`);
+  const id = g.p.findIndex(p => p.alive && p.role === 'idiot'); if (id >= 0 && g.idiotOut) t.push(`${icon('idiot', 'sm')} <b>${esc(nameOf(id))}</b> (Idiot révélé) ne vote plus.`);
+  return t.map(x => x.replace(/^(<img[^>]*>) (.*)$/, '$1<span>$2</span>')).map(x => `<div class="lg-note">${x}</div>`).join('') + (t.length ? '<div style="height:8px"></div>' : '');
+}
+function mayor() {
+  const g = S.g;
+  V.innerHTML = `<div class="lg-stepbox">${icon('maire')}<div><b>${esc(nameOf(g.mayorI))} était le Maire</b><p>« Maire, avant de partir, désigne ton successeur. »</p></div></div>
+    ${pick(alive(), 'succ', null)}`;
 }
 function statusHTML() {
   const g = S.g;
-  return `<details class="lg-rules"${S.mode === 'host' ? ' open' : ''}><summary>Les cartes (meneur)</summary><ul class="lg-list">${g.p.map((p, i) => `<li class="${p.alive ? '' : 'out'}">${icon(p.role, 'sm')}<span>${esc(p.name)}</span><b>${ROLES[p.role].n}${g.lovers && g.lovers.includes(i) ? ' ♥' : ''}</b></li>`).join('')}</ul>
+  return `<details class="lg-rules"${S.mode === 'host' ? ' open' : ''}><summary>Les cartes (meneur)</summary><ul class="lg-list">${g.p.map((p, i) => `<li class="${p.alive ? '' : 'out'}">${icon(p.role, 'sm')}<span>${esc(p.name)}</span><b>${ROLES[p.role].n}${p.role === 'sauvage' && g.wild ? ' (loup)' : ''}${g.lovers && g.lovers.includes(i) ? ' ' + icon('amoureux', 'sm') : ''}</b></li>`).join('')}</ul>
     <p class="lg-muted">Potions : vie ${g.life ? 'disponible' : 'utilisée'}, mort ${g.poison ? 'disponible' : 'utilisée'}.</p></details>`;
 }
 function end() {
-  const g = S.g, t = { village: 'Le village gagne', loups: 'Les Loups-Garous gagnent', amoureux: 'Les amoureux gagnent', personne: 'Personne ne survit' }[g.winner];
-  const sub = { village: 'Tous les loups ont été éliminés.', loups: 'Les loups sont aussi nombreux que les villageois.', amoureux: 'Un loup et un villageois, seuls contre tous.', personne: 'Le village est désert…' }[g.winner];
-  V.innerHTML = `<div class="lg-end lg-e-${g.winner}">${icon(g.winner === 'loups' ? 'loup' : g.winner === 'amoureux' ? 'cupidon' : 'villageois', 'big')}<span>Fin de partie</span><b>${t}</b><em>${sub}</em></div>
-    <ul class="lg-list">${g.p.map((p, i) => `<li class="${p.alive ? '' : 'out'}">${icon(p.role, 'sm')}<span>${esc(p.name)}</span><b>${ROLES[p.role].n}${g.lovers && g.lovers.includes(i) ? ' ♥' : ''}</b></li>`).join('')}</ul>
+  const g = S.g, t = { village: 'Le village gagne', loups: 'Les Loups-Garous gagnent', amoureux: 'Les amoureux gagnent', loupblanc: 'Le Loup Blanc gagne', personne: 'Personne ne survit' }[g.winner];
+  const sub = { village: 'Tous les loups ont été éliminés.', loups: 'Les loups sont aussi nombreux que les villageois.', amoureux: 'Un loup et un villageois, seuls contre tous.', loupblanc: 'Il est le dernier survivant.', personne: 'Le village est désert…' }[g.winner];
+  V.innerHTML = `<div class="lg-end lg-e-${g.winner}">${icon({ loups: 'loup', amoureux: 'amoureux', loupblanc: 'loupblanc', village: 'villageois', personne: 'ancetre' }[g.winner], 'big')}<span>Fin de partie</span><b>${t}</b><em>${sub}</em></div>
+    <ul class="lg-list">${g.p.map((p, i) => `<li class="${p.alive ? '' : 'out'}">${icon(p.role, 'sm')}<span>${esc(p.name)}</span><b>${ROLES[p.role].n}${p.role === 'sauvage' && g.wild ? ' (loup)' : ''}${g.lovers && g.lovers.includes(i) ? ' ' + icon('amoureux', 'sm') : ''}</b></li>`).join('')}</ul>
     <button class="lg-go" data-a="start">Rejouer avec les mêmes joueurs</button><button class="lg-link" data-a="quit-end">Modifier les joueurs</button>`;
 }
 
@@ -233,19 +317,26 @@ V.addEventListener('click', e => {
   const b = e.target.closest('[data-a]'); if (!b || b.disabled) return;
   const a = b.dataset.a, i = +b.dataset.i, g = S.g;
   if (a === 'del') { S.players.splice(i, 1); save(); return render(); }
-  if (a === 'r+' || a === 'r-') { const c = Object.assign({}, cfg()); const r = b.dataset.r; c[r] = Math.max(r === 'loup' ? 1 : 0, Math.min(r === 'loup' ? 6 : 1, c[r] + (a === 'r+' ? 1 : -1))); S.cfg = c; S.custom = true; save(); return render(); }
+  if (a === 'r+' || a === 'r-') { const c = Object.assign({}, cfg()); const r = b.dataset.r; c[r] = Math.max(0, Math.min(r === 'loup' ? 6 : 1, (c[r] || 0) + (a === 'r+' ? 1 : -1))); S.cfg = c; S.custom = true; save(); return render(); }
   if (a === 'auto') { S.custom = false; S.cfg = null; save(); return render(); }
   if (a === 'start') return start();
   if (a === 'quit' || a === 'quit-end') { if (a === 'quit' && !confirm('Arrêter la partie en cours ?')) return; S.g = null; save(); if (S.mode === 'host') { H.lastSt = ''; H.chan?.publish({ k: 'lobby' }).catch(() => {}); } return render(); }
   if (a === 'show') { g.shown = true; save(); return render(); }
   if (a === 'hide') { g.shown = false; g.di++; if (g.di >= g.p.length) { g.phase = 'night'; g.step = 0; } save(); return render(); }
   if (a === 'tmp2') { const s = g.tmp || []; g.tmp = s.includes(i) ? s.filter(x => x !== i) : s.length < 2 ? [...s, i] : [s[1], i]; save(); return render(); }
-  if (a === 'cupi-ok') { g.lovers = g.tmp; g.tmp = null; g.step++; save(); return render(); }
+  if (a === 'cupi-ok') { g.lovers = g.tmp; g.tmp = null; const ns = steps(); g.step = ns.indexOf('cupidon') + 1; if (g.step >= ns.length) return endNight(); save(); return render(); }
   if (a === 'seer') { g.seen = i; save(); return render(); }
   if (a === 'wolf') { g.victim = i; save(); return render(); }
   if (a === 'save') { g.saved = !g.saved; save(); return render(); }
   if (a === 'poison') { g.poisoned = g.poisoned === i ? null : i; save(); return render(); }
-  if (a === 'next') { g.step++; if (g.step >= steps().length) return endNight(); save(); return render(); }
+  if (a === 'next') { const st = steps(); stepDone(st[g.step]); const cur = st[g.step]; const ns = steps(); g.step = ns.indexOf(cur) + 1; if (g.step >= ns.length) return endNight(); save(); return render(); }
+  if (a === 'steal') { g.tmpSteal = g.tmpSteal === i ? null : i; save(); return render(); }
+  if (a === 'model') { g.model = i; save(); return render(); }
+  if (a === 'guard') { g.guard = i; save(); return render(); }
+  if (a === 'raven') { g.raven = g.raven === i ? null : i; save(); return render(); }
+  if (a === 'gm') { g.gmVictim = g.gmVictim === i ? null : i; save(); return render(); }
+  if (a === 'lb') { g.lbVictim = g.lbVictim === i ? null : i; save(); return render(); }
+  if (a === 'succ') { g.mayorIdx = i; g.notes.push(nameOf(i) + ' devient le nouveau Maire.'); g.phase = g.mayorFrom; return resolveDeaths(); }
   if (a === 'to-night1') { g.phase = 'night'; g.step = 0; save(); return render(); }
   if (a === 'm-local') { S.mode = 'local'; save(); return render(); }
   if (a === 'm-host') return hostCreate();
@@ -257,8 +348,11 @@ V.addEventListener('click', e => {
   if (a === 'to-night') { g.phase = 'night'; g.night++; g.step = 0; save(); return render(); }
   if (a === 'to-day') { g.phase = 'day'; save(); return render(); }
   if (a === 'shoot') { g.phase = g.hunterFrom === 'day' ? 'day' : 'night'; g.queue.unshift(i); g.hunterI = null; return resolveDeaths(); }
-  if (a === 'lynch') { if (!confirm('Éliminer ' + nameOf(i) + ' ?')) return; g.dead = []; g.queue = [i]; g.after = 'night'; return resolveDeaths(); }
-  if (a === 'nolynch') { g.dead = []; g.queue = []; g.after = 'night'; return resolveDeaths(); }
+  if (a === 'lynch') { if (!confirm('Éliminer ' + nameOf(i) + ' ?')) return; g.dead = []; g.notes = []; g.after = 'night';
+    if (roleOf(i) === 'idiot' && !g.idiotOut) { g.idiotOut = true; g.notes.push(nameOf(i) + ' est l\u2019Idiot du Village : il est épargné, mais ne votera plus.'); g.queue = []; }
+    else g.queue = [i];
+    g.ravenNext = null; return resolveDeaths(); }
+  if (a === 'nolynch') { g.dead = []; g.notes = []; const bk = g.p.findIndex(p => p.alive && p.role === 'bouc'); g.queue = bk >= 0 ? [bk] : []; if (bk < 0) g.notes.push('Égalité : personne n\u2019est éliminé.'); g.after = 'night'; g.ravenNext = null; return resolveDeaths(); }
 });
 V.addEventListener('submit', e => {
   e.preventDefault();
@@ -318,6 +412,11 @@ async function hostStart(roles) {
   S.g = newGame(pl.map(p => p.name), roles, 'cards'); S.g.gid = gid; S.g.pids = pl.map(p => p.pid);
   H.lastSt = ''; save(); render();
 }
+function resendCards(idx) {   // nouvelle carte chiffrée (Voleur, Enfant Sauvage devenu loup)
+  const g = S.g; if (!H.chan || !g.pids) return;
+  Promise.all(idx.filter(i => i >= 0).map(async i => { const pl = H.players.find(x => x.pid === g.pids[i]); return pl ? [pl.pid, await seal(S.online.priv, pl.pub, { role: g.p[i].role, wild: g.p[i].role === 'sauvage' && g.wild })] : null; }))
+    .then(r => { const box = Object.fromEntries(r.filter(Boolean)); if (Object.keys(box).length) H.chan.publish({ k: 'card', gid: g.gid, hostPub: S.online.pub, box }).catch(() => {}); });
+}
 let stT = null;
 function pushStatus() {   // les joueurs voient la phase et qui est encore en vie (jamais les rôles des vivants)
   const g = S.g; if (!g || !H.chan || !g.gid) return;
@@ -341,9 +440,9 @@ function playerView() {
   const net = `<p class="lg-net ${P.net || ''}"><i></i>${P.net === 'on' ? 'Connecté' : 'Connexion…'} · partie ${esc(P.code)}</p>`;
   if (!P.card) { V.innerHTML = net + `<div class="lg-pass"><span>Bienvenue ${esc(me.name)}</span><b>En attente…</b></div><p class="lg-muted" style="text-align:center">Le meneur va distribuer les cartes.</p><button class="lg-link" data-a="pl-leave">Quitter la partie</button>`; return; }
   const r = ROLES[P.card.role], st = P.st, myIdx = P.names ? P.names.indexOf(me.name) : -1, dead = st && myIdx >= 0 && st.alive && !st.alive[myIdx];
-  V.innerHTML = net + (st ? `<div class="${/^Nuit/.test(st.phase) ? 'lg-night' : 'lg-day'}"><span>${st.winner ? 'Fin de partie' : 'En cours'}</span><b>${esc(st.winner ? ({ village: 'Le village gagne', loups: 'Les Loups-Garous gagnent', amoureux: 'Les amoureux gagnent', personne: 'Personne ne survit' })[st.winner] : st.phase)}</b></div>` : '') +
+  V.innerHTML = net + (st ? `<div class="${/^Nuit/.test(st.phase) ? 'lg-night' : 'lg-day'}"><span>${st.winner ? 'Fin de partie' : 'En cours'}</span><b>${esc(st.winner ? ({ village: 'Le village gagne', loups: 'Les Loups-Garous gagnent', amoureux: 'Les amoureux gagnent', loupblanc: 'Le Loup Blanc gagne', personne: 'Personne ne survit' })[st.winner] : st.phase)}</b></div>` : '') +
     (dead ? `<div class="lg-death">${icon(P.card.role, 'sm')}<span>Tu es mort. Ne dis plus rien !</span></div>` : '') +
-    `<button class="lg-cardbtn" data-a="pl-show">${P.shown ? `<div class="lg-card lg-c-${r.camp}">${icon(P.card.role, 'big')}<b>${r.n}</b><p>${r.d}</p></div><span>Toucher pour cacher</span>` : `<div class="lg-back-card">${icon('loup', 'big')}<b>Ta carte</b></div><span>Toucher pour voir ton rôle (sans que les autres regardent)</span>`}</button>` +
+    `<button class="lg-cardbtn" data-a="pl-show">${P.shown ? `<div class="lg-card lg-c-${r.camp}">${icon(P.card.wild ? 'loup' : P.card.role, 'big')}<b>${P.card.wild ? 'Loup-Garou' : r.n}</b><p>${P.card.wild ? 'Tu étais l’Enfant Sauvage : ton modèle est mort, tu chasses désormais avec les loups.' : r.d}</p></div><span>Toucher pour cacher</span>` : `<div class="lg-back-card">${icon('loup', 'big')}<b>Ta carte</b></div><span>Toucher pour voir ton rôle (sans que les autres regardent)</span>`}</button>` +
     (st && P.names ? `<details class="lg-rules"><summary>Le village</summary><ul class="lg-list">${P.names.map((nm, i) => `<li class="${st.alive[i] ? '' : 'out'}">${st.dead[i] || (st.roles && st.roles[i]) ? icon((st.roles || st.dead)[i], 'sm') : ''}<span>${esc(nm)}</span><b>${st.roles ? ROLES[st.roles[i]].n : st.dead[i] ? ROLES[st.dead[i]].n : 'en vie'}</b></li>`).join('')}</ul></details>` : '') +
     `<button class="lg-link" data-a="pl-leave">Quitter la partie</button>`;
 }
@@ -361,6 +460,8 @@ async function playerJoin(code, name) {
       if (d.k === 'start' && d.box && d.box[me.pid]) {
         P.gid = d.gid; P.names = d.names; P.st = null; P.shown = false;
         unseal(me.priv, d.hostPub, d.box[me.pid]).then(x => { if (P.gid === d.gid) { P.card = x; buzz([15, 40, 15]); render(); } }).catch(() => toast('Impossible de lire ta carte'));
+      } else if (d.k === 'card' && d.gid === P.gid && d.box && d.box[me.pid]) {
+        unseal(me.priv, d.hostPub, d.box[me.pid]).then(x => { P.card = x; P.shown = false; buzz([30, 60, 30]); toast(x.wild ? 'Ton modèle est mort : tu deviens Loup-Garou !' : 'Ta carte a changé : regarde-la'); render(); }).catch(() => {});
       } else if (d.k === 'st' && d.gid === P.gid) { P.st = d; render(); }
       else if (d.k === 'lobby') { P.card = null; P.st = null; P.gid = null; render(); }
     },

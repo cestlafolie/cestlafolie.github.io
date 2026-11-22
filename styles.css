@@ -800,3 +800,9 @@ img.lg-ico{border-radius:0!important;object-fit:contain;height:auto!important;as
 .lg-end img.lg-ico{width:120px!important}
 img.lg-ico.sm{width:30px!important}
 .lg-back-card img.lg-ico{width:120px!important;filter:grayscale(1) brightness(.35)}
+/* LG : notes publiques (maire, corbeau, idiot, égalité) et amoureux */
+.mod-lg .lg-note,.lg .lg-note{display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;border-left:2px solid var(--bone,#ece6da);color:var(--bone,#ece6da);font-size:.95rem;line-height:1.35}
+.lg .lg-note img.lg-ico.sm{width:30px;flex:none}
+.lg .lg-lovers{display:flex;align-items:center;gap:12px;margin-top:14px}
+.lg .lg-lovers img.lg-ico{width:52px;flex:none}
+.lg .lg-list b img.lg-ico.sm{width:20px;vertical-align:middle;margin-left:4px}
