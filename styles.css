@@ -172,73 +172,93 @@ body[data-tab="accueil"] .top-title{font:800 1.15rem "Fraunces",Georgia,serif;le
 @media(max-width:360px){.live>span{display:none}}
 .tab-ico.home{margin-top:-3px}
 
-/* ===== Module : roue du hasard (famille de l'accueil : fond bleu) ===== */
-body[data-tab="roue"]{background:radial-gradient(130% 90% at 50% 0%,#2f5394 0%,#18305e 55%,#0d1b3a 100%)}
+/* ===== Module : roue du hasard — style moderne, sombre ===== */
+body[data-tab="roue"]{background:#0b0d12}
 body:not([data-tab="vote"]) .live{visibility:hidden}
-body[data-tab="roue"] .top-title{font:800 1.15rem "Fraunces",Georgia,serif;letter-spacing:0;text-transform:none}
-.roue{color:#f6efe0;padding-top:4px}
-.r-mode{position:relative;display:grid;grid-template-columns:1fr 1fr;background:rgba(255,255,255,.08);border-radius:999px;padding:4px}
-.r-mode-b{position:relative;z-index:1;height:40px;border-radius:999px;font:600 .82rem var(--head);letter-spacing:.12em;text-transform:uppercase;color:rgba(246,239,224,.7);transition:color .25s}
-.r-mode-b.on{color:#14213d}
-.r-mode-k{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:999px;background:#e9c46a;transition:transform .3s var(--ease)}
+body[data-tab="roue"] .top-title{font:800 1.12rem "Manrope",system-ui,sans-serif;letter-spacing:-.01em;text-transform:none}
+.roue{--r-ink:#f4f5f7;--r-dim:#8a90a0;--r-card:#151922;--r-line:#232836;color:var(--r-ink);font-family:"Manrope",system-ui,sans-serif;padding-top:4px;position:relative}
+.roue::before{content:"";position:fixed;left:0;right:0;top:0;height:min(120vw,560px);background:radial-gradient(60% 50% at 50% 55%,rgba(58,134,255,.22),rgba(241,91,181,.10) 55%,transparent);pointer-events:none;z-index:-1;transition:opacity .4s}
+.r-mode{position:relative;display:grid;grid-template-columns:1fr 1fr;background:var(--r-card);border:1px solid var(--r-line);border-radius:14px;padding:4px}
+.r-mode-b{position:relative;z-index:1;height:40px;border-radius:10px;font:700 .9rem "Manrope",sans-serif;color:var(--r-dim);transition:color .25s}
+.r-mode-b.on{color:#0b0d12}
+.r-mode-k{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:10px;background:var(--r-ink);box-shadow:0 4px 14px rgba(0,0,0,.35);transition:transform .35s var(--ease)}
 .roue[data-mode="teams"] .r-mode-k{transform:translateX(100%)}
 
-.r-wheel-wrap{position:relative;width:min(100%,calc(100dvh - 380px),360px);min-width:220px;aspect-ratio:1;margin:18px auto 0}
-.r-wheel{width:100%;height:100%;display:block;filter:drop-shadow(0 14px 26px rgba(0,0,0,.4));overflow:visible}
+.r-wheel-wrap{position:relative;width:min(100%,calc(100dvh - 370px),360px);min-width:230px;aspect-ratio:1;margin:22px auto 0}
+.r-wheel{width:100%;height:100%;display:block;overflow:visible}
 #rRot{transform-origin:0 0;transform-box:view-box}
-.r-label{font:700 10px "Oswald","Arial Narrow",sans-serif;fill:#14213d;letter-spacing:.02em}
-.r-empty{font:600 9px "Oswald",sans-serif;fill:rgba(246,239,224,.7);letter-spacing:.06em;text-transform:uppercase}
-.r-pointer{position:absolute;z-index:2;top:-8px;left:50%;width:26px;height:30px;transform:translateX(-50%);background:#f6efe0;clip-path:polygon(0 0,100% 0,50% 100%);filter:drop-shadow(0 3px 3px rgba(0,0,0,.35))}
-.r-spin{position:absolute;z-index:2;left:50%;top:50%;width:27%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:#14213d;color:#f6efe0;border:3px solid #f6efe0;font:700 clamp(.72rem,3.4vw,.9rem) var(--head);letter-spacing:.1em;text-transform:uppercase;box-shadow:0 6px 18px rgba(0,0,0,.45);transition:transform .15s var(--ease),opacity .2s}
+.r-label{font:800 10px "Manrope",system-ui,sans-serif;letter-spacing:.01em}
+.r-empty{font:700 7.5px "Manrope",sans-serif;fill:var(--r-dim);letter-spacing:.04em}
+.r-led{fill:#2a3040;transition:fill .15s}
+.r-led.on{fill:#fff;filter:drop-shadow(0 0 2px #fff)}
+.r-pointer{position:absolute;z-index:2;top:-6px;left:50%;width:30px;height:38px;transform:translateX(-50%);transform-origin:50% 20%}
+.r-pointer::before{content:"";position:absolute;inset:0;background:#fff;clip-path:path("M15 38 C15 38 1 18 1 12 A14 12 0 0 1 29 12 C29 18 15 38 15 38Z");filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))}
+.r-pointer::after{content:"";position:absolute;left:50%;top:7px;width:9px;height:9px;margin-left:-4.5px;border-radius:50%;background:#0b0d12}
+.r-pointer.tick{animation:rtick .12s ease-out}
+@keyframes rtick{50%{transform:translateX(-50%) rotate(-14deg)}}
+.r-spin{position:absolute;z-index:2;left:50%;top:50%;width:26%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#dfe3ea);color:#0b0d12;font:800 clamp(.72rem,3.4vw,.9rem) "Manrope",sans-serif;box-shadow:0 0 0 6px #0b0d12,0 0 0 8px rgba(255,255,255,.12),0 10px 24px rgba(0,0,0,.6);transition:transform .15s var(--ease),opacity .2s}
 .r-spin:active:not(:disabled){transform:translate(-50%,-50%) scale(.92)}
-.r-spin:disabled{opacity:.55}
+.r-spin:disabled{opacity:.45}
 
-.r-opts{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:16px;min-height:44px}
+.r-opts{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:18px;min-height:44px}
 .roue[data-mode="solo"] #rOptsTeams,.roue[data-mode="teams"] #rOptsSolo{display:none}
-.r-check{display:flex;align-items:center;gap:10px;font:400 .92rem system-ui,-apple-system,sans-serif;color:rgba(246,239,224,.85)}
+.r-check{display:flex;align-items:center;gap:10px;font:600 .92rem "Manrope",sans-serif;color:var(--r-dim)}
 .r-check input{position:absolute;opacity:0;pointer-events:none}
-.r-check span{width:46px;height:28px;border-radius:999px;background:rgba(255,255,255,.18);position:relative;transition:background .2s;flex:none}
-.r-check span::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#f6efe0;transition:transform .25s var(--ease)}
-.r-check input:checked+span{background:#2a9d8f}
-.r-check input:checked+span::after{transform:translateX(18px)}
-.r-lbl{font:600 .8rem var(--head);letter-spacing:.14em;text-transform:uppercase;color:rgba(246,239,224,.75)}
-.r-stepper{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border-radius:999px;padding:4px}
-.r-stepper button{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);font-size:1.3rem;font-weight:600}
-.r-stepper button:active{background:rgba(255,255,255,.25)}
-.r-stepper b{min-width:28px;text-align:center;font:800 1.3rem "Fraunces",Georgia,serif}
+.r-check span{width:48px;height:28px;border-radius:999px;background:var(--r-line);position:relative;transition:background .2s;flex:none}
+.r-check span::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.4);transition:transform .25s var(--ease)}
+.r-check input:checked+span{background:#06d6a0}
+.r-check input:checked+span::after{transform:translateX(20px)}
+.r-lbl{font:700 .9rem "Manrope",sans-serif;color:var(--r-dim)}
+.r-stepper{display:flex;align-items:center;gap:4px;background:var(--r-card);border:1px solid var(--r-line);border-radius:14px;padding:4px}
+.r-stepper button{width:42px;height:40px;border-radius:10px;font-size:1.3rem;font-weight:700;color:var(--r-ink)}
+.r-stepper button:active{background:var(--r-line)}
+.r-stepper b{min-width:30px;text-align:center;font:800 1.25rem "Manrope",sans-serif}
 
-.r-result{margin-top:14px;padding:16px;border-radius:16px;background:#f6efe0;color:#14213d;text-align:center;box-shadow:0 14px 30px rgba(0,0,0,.35)}
-.r-result.pop{animation:rpop .45s cubic-bezier(.4,1.6,.5,1)}
-@keyframes rpop{from{transform:scale(.9);opacity:0}}
-.r-k{font:600 .72rem var(--head);letter-spacing:.16em;text-transform:uppercase;color:#6b6250}
-.r-win{font:800 clamp(1.8rem,9vw,2.6rem)/1.05 "Fraunces",Georgia,serif;margin-top:4px;word-break:break-word}
-.r-teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:10px;text-align:left}
-.r-team{border-radius:12px;padding:10px 12px;background:#fff;border-top:6px solid var(--tc)}
-.r-team b{display:block;font:800 1rem "Fraunces",Georgia,serif;margin-bottom:4px}
-.r-team ul{list-style:none;font:400 .92rem/1.5 system-ui,-apple-system,sans-serif}
+.r-result{margin-top:14px;padding:18px;border-radius:20px;background:var(--r-card);border:1px solid var(--r-line);text-align:center;box-shadow:0 20px 40px rgba(0,0,0,.4)}
+.r-result.pop{animation:rpop .5s cubic-bezier(.3,1.5,.5,1)}
+@keyframes rpop{from{transform:translateY(10px) scale(.95);opacity:0}}
+.r-k{font:700 .78rem "Manrope",sans-serif;color:var(--r-dim);letter-spacing:.02em}
+.r-win{display:flex;align-items:center;justify-content:center;gap:12px;font:800 clamp(1.9rem,9vw,2.6rem)/1.05 "Manrope",sans-serif;letter-spacing:-.03em;margin-top:8px;word-break:break-word}
+.r-win i{flex:none;width:.95em;height:.95em;border-radius:50%;background:var(--wc);box-shadow:0 0 24px var(--wc)}
+.r-teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:12px;text-align:left}
+.r-team{border-radius:14px;padding:12px;background:#0f1218;border:1px solid var(--r-line);position:relative;overflow:hidden}
+.r-team::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:var(--tc)}
+.r-team b{display:flex;align-items:center;gap:8px;font:800 .95rem "Manrope",sans-serif;margin-bottom:8px}
+.r-team b::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--tc);box-shadow:0 0 10px var(--tc)}
+.r-team ul{list-style:none;font:600 .92rem/1.65 "Manrope",sans-serif;color:#cfd3dc}
 
-.r-players{margin-top:22px;padding:16px;border-radius:16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1)}
-.r-players-h{display:flex;justify-content:space-between;align-items:center;font:600 .82rem var(--head);letter-spacing:.14em;text-transform:uppercase}
-.r-players-h em{font-style:normal;margin-left:6px;color:#e9c46a}
-.r-link{font:400 .82rem system-ui,-apple-system,sans-serif;color:rgba(246,239,224,.7);text-decoration:underline;text-underline-offset:3px;padding:8px 0}
-.r-add{display:flex;gap:8px;margin-top:10px}
-.r-add input{-webkit-user-select:text;user-select:text;flex:1;min-width:0;height:48px;border-radius:12px;border:1.5px solid rgba(255,255,255,.2);background:rgba(0,0,0,.2);color:#f6efe0;padding:0 14px;font:400 16px system-ui,-apple-system,sans-serif}
-.r-add input::placeholder{color:rgba(246,239,224,.45)}
-.r-add input:focus{outline:none;border-color:#e9c46a}
-.r-add button{height:48px;padding:0 16px;border-radius:12px;background:#e9c46a;color:#14213d;font:700 .85rem var(--head);letter-spacing:.1em;text-transform:uppercase}
+.r-players{margin-top:22px;padding:16px;border-radius:20px;background:var(--r-card);border:1px solid var(--r-line)}
+.r-players-h{display:flex;justify-content:space-between;align-items:center;font:800 1rem "Manrope",sans-serif}
+.r-players-h em{font-style:normal;margin-left:8px;font-size:.8rem;font-weight:700;color:#0b0d12;background:var(--r-ink);border-radius:999px;padding:2px 8px;vertical-align:2px}
+.r-link{font:600 .82rem "Manrope",sans-serif;color:var(--r-dim);padding:8px 0}
+.r-link:active{color:var(--r-ink)}
+.r-add{display:flex;gap:8px;margin-top:12px}
+.r-add input{-webkit-user-select:text;user-select:text;flex:1;min-width:0;height:50px;border-radius:14px;border:1px solid var(--r-line);background:#0f1218;color:var(--r-ink);padding:0 16px;font:600 16px "Manrope",sans-serif;transition:border-color .2s,box-shadow .2s}
+.r-add input::placeholder{color:#5c6272}
+.r-add input:focus{outline:none;border-color:#3a86ff;box-shadow:0 0 0 3px rgba(58,134,255,.25)}
+.r-add button{height:50px;padding:0 18px;border-radius:14px;background:var(--r-ink);color:#0b0d12;font:800 .92rem "Manrope",sans-serif}
 .r-add button:active{transform:scale(.96)}
 .r-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.r-chip{display:flex;align-items:center;border-radius:999px;background:#f6efe0;color:#14213d;transition:opacity .2s,background .2s}
-.r-chip-n{padding:9px 4px 9px 14px;font:500 .95rem system-ui,-apple-system,sans-serif;max-width:60vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.r-chip-x{width:36px;height:38px;font-size:1.2rem;line-height:1;opacity:.55}
-.r-chip.out{background:rgba(255,255,255,.12);color:rgba(246,239,224,.55)}
-.r-chip.out .r-chip-n{text-decoration:line-through}
+.r-chip{display:flex;align-items:center;border-radius:999px;background:#0f1218;border:1px solid var(--r-line);transition:opacity .2s}
+.r-chip-n{display:flex;align-items:center;gap:8px;padding:6px 2px 6px 6px;font:700 .92rem "Manrope",sans-serif;color:var(--r-ink);max-width:60vw;overflow:hidden;white-space:nowrap}
+.r-chip-n i{flex:none;width:26px;height:26px;border-radius:50%;background:var(--cc);color:#0b0d12;font:800 .72rem/26px "Manrope",sans-serif;text-align:center;font-style:normal}
+.r-chip-n span{overflow:hidden;text-overflow:ellipsis}
+.r-chip-x{width:34px;height:38px;font-size:1.15rem;line-height:1;color:var(--r-dim)}
+.r-chip.out{opacity:.4}
+.r-chip.out .r-chip-n span{text-decoration:line-through}
 .r-clear{display:block;margin-top:8px}
+.r-confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
 
 /* Accueil : carte de la roue + icônes de menu */
-.h-wheel{background:#f6efe0;color:#14213d;box-shadow:0 14px 30px rgba(0,0,0,.35);transform:rotate(.8deg)}
+.h-wheel{background:#0b0d12;color:#f4f5f7;border:1px solid #232836;box-shadow:0 14px 30px rgba(0,0,0,.4);transform:rotate(.8deg);font-family:"Manrope",sans-serif}
 .h-wheel:active{transform:rotate(0) scale(.97)}
-.h-wheel-ico{width:46px;height:46px;border-radius:50%;margin-bottom:4px;background:conic-gradient(#e9c46a 0 25%,#e76f51 0 50%,#2a9d8f 0 75%,#8ecae6 0);border:3px solid #14213d}
-.h-wheel .h-go{background:#14213d}
+.h-wheel-ico{width:46px;height:46px;border-radius:50%;margin-bottom:4px;background:radial-gradient(circle,#fff 0 18%,transparent 19%),conic-gradient(#ff4d6d 0 25%,#ffb703 0 50%,#06d6a0 0 75%,#3a86ff 0);box-shadow:0 0 22px rgba(58,134,255,.45)}
+.h-wheel .h-name{font:800 1.55rem/1.05 "Manrope",sans-serif;letter-spacing:-.03em}
+.h-wheel .h-desc{font-family:"Manrope",sans-serif;font-weight:500;color:#aab0bd;opacity:1}
+.h-wheel .h-go{background:#f4f5f7;color:#0b0d12;font-family:"Manrope",sans-serif;letter-spacing:.02em;text-transform:none;font-size:.88rem}
 .tab-ico.wheel b{width:13px;height:13px;border-radius:50%;background:conic-gradient(var(--night-line) 0 100%)}
-.tab.active .tab-ico.wheel b{background:conic-gradient(#e9c46a 0 25%,#e76f51 0 50%,#2a9d8f 0 75%,#8ecae6 0)}
+.tab.active .tab-ico.wheel b{background:conic-gradient(#ff4d6d 0 25%,#ffb703 0 50%,#06d6a0 0 75%,#3a86ff 0)}
+
+/* couleur de fond derrière la page (rebond iOS, zones hors page) assortie à l'onglet */
+html:has(body[data-tab="roue"]){background:#0b0d12}
+html:has(body[data-tab="accueil"]){background:#0d1b3a}

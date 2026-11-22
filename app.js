@@ -47,6 +47,7 @@ function tweenText(el, to, fmt, ms = 450) {
     const title = mod.dataset.title || name;
     $('topTitle').textContent = title; document.title = title;
     document.body.dataset.tab = name;
+    if (push) window.scrollTo(0, 0);
     if (push && location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
     close();
   }
