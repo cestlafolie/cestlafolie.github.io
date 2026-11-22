@@ -15,9 +15,14 @@ let timeline = [], seen = new Set(), pending = null, live = false, lastRounds = 
 const nonces = new Set();
 let queue = Promise.resolve();
 
+const store = {   // accès protégé à la mémoire du téléphone (peut être refusé en navigation privée)
+  get: k => { try { return localStorage.getItem(k); } catch { return null; } },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
+  del: k => { try { localStorage.removeItem(k); } catch {} },
+};
 const me = (() => {
-  let v = localStorage.getItem('badgheure_voter');
-  if (!v) { v = Array.from(crypto.getRandomValues(new Uint8Array(12)), b => (b % 36).toString(36)).join(''); localStorage.setItem('badgheure_voter', v); }
+  let v = store.get('badgheure_voter');
+  if (!v) { v = Array.from(crypto.getRandomValues(new Uint8Array(12)), b => (b % 36).toString(36)).join(''); store.set('badgheure_voter', v); }
   return v;
 })();
 
@@ -219,11 +224,11 @@ $('btnAdmin').onclick = async () => {
   if (adminKey) { $('adminWrap').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
   const pw = prompt('Mot de passe admin'); if (!pw) return;
   const btn = $('btnAdmin'); btn.textContent = 'vérification…'; btn.disabled = true;
-  try { const pk = await unlock(pw.trim()); localStorage.setItem('badgheure_admin', tob64(pk)); await setAdmin(pk); toast('Mode admin'); }
+  try { const pk = await unlock(pw.trim()); store.set('badgheure_admin', tob64(pk)); await setAdmin(pk); toast('Mode admin'); }
   catch { btn.textContent = 'admin'; toast('Mauvais mot de passe'); }
   btn.disabled = false;
 };
-$('btnAdminOut').onclick = () => { localStorage.removeItem('badgheure_admin'); setAdmin(null); toast('Admin fermé'); };
+$('btnAdminOut').onclick = () => { store.del('badgheure_admin'); setAdmin(null); toast('Admin fermé'); };
 
 async function sendPlayers(n) {
   n = Math.max(0, Math.min(99, Math.round(n || 0)));
@@ -241,7 +246,7 @@ $('btnVoteReset').onclick = async () => {
 };
 
 // ---- démarrage
-{ const s = localStorage.getItem('badgheure_admin'); if (s) setAdmin(b64(s)).catch(() => localStorage.removeItem('badgheure_admin')); }
+{ const s = store.get('badgheure_admin'); if (s) setAdmin(b64(s)).catch(() => store.del('badgheure_admin')); }
 restoreCache();
 render();
 connectAll(true);
