@@ -806,3 +806,15 @@ img.lg-ico.sm{width:30px!important}
 .lg .lg-lovers{display:flex;align-items:center;gap:12px;margin-top:14px}
 .lg .lg-lovers img.lg-ico{width:52px;flex:none}
 .lg .lg-list b img.lg-ico.sm{width:20px;vertical-align:middle;margin-left:4px}
+/* Undercover : classement par points (Mystère White + Anime) */
+.mw-rank ol{list-style:none;display:flex;flex-direction:column;gap:6px}
+.mw-rank li{display:flex;align-items:center;gap:10px;padding:8px 12px;border:2px solid var(--ink);border-radius:10px;font-weight:700}
+.mw-rank li i{font-style:normal;width:22px;height:22px;flex:none;display:grid;place-items:center;border-radius:50%;background:var(--ink);color:#fff;font-size:.78rem}
+.mw-rank li span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mw-rank li em{font-style:normal;font-size:.8rem;font-weight:800;color:#1f8a4c;background:#dff5e6;border-radius:99px;padding:2px 8px}
+.mw-rank li b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.mw-rank li.mw-first{background:#ffd93d}
+.anime .mw-rank li{border-color:rgba(255,255,255,.18);border-width:1.5px}
+.anime .mw-rank li i{background:#f5f3ff;color:#14102a}
+.anime .mw-rank li.mw-first{background:linear-gradient(90deg,#ff7a00,#e5383b);border-color:transparent;color:#fff}
+.anime .mw-rank li em{background:rgba(107,203,119,.2);color:#8fe3a0}

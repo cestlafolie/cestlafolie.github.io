@@ -63,6 +63,23 @@ function winner(roles, alive) {
   if (civ <= 1) return 'intrus';
   return null;
 }
+// ---------- points (classement) ----------
+// Le camp gagnant marque, joueurs éliminés compris : Civil 2 pts, Mister White 6 pts, Undercover 10 pts.
+// Si Mister White gagne en devinant le mot, seuls les Mister White marquent.
+const POINTS = { civil: 2, white: 6, under: 10 };
+function gainOf(role, win) {
+  if (win === 'civils') return role === 'civil' ? POINTS.civil : 0;
+  if (win === 'white') return role === 'white' ? POINTS.white : 0;
+  return role === 'civil' ? 0 : POINTS[role];
+}
+// list : [{ name, pts, gain }] → tableau trié (ex aequo au même rang)
+function rankHTML(list, title = 'Classement') {
+  if (!list || !list.length) return '';
+  const l = list.slice().sort((a, b) => b.pts - a.pts || a.name.localeCompare(b.name));
+  let rank = 0, prev = null;
+  return `<div class="mw-box mw-rank"><p class="mw-label">${title}</p><ol>${l.map((x, i) => { if (x.pts !== prev) { rank = i + 1; prev = x.pts; }
+    return `<li${rank === 1 && x.pts > 0 ? ' class="mw-first"' : ''}><i>${rank}</i><span>${esc(x.name)}</span>${x.gain ? `<em>+${x.gain}</em>` : ''}<b>${x.pts} pt${x.pts > 1 ? 's' : ''}</b></li>`; }).join('')}</ol></div>`;
+}
 const wordOf = (role, civil, under) => role === 'civil' ? civil : role === 'under' ? under : null;
 
 // ---------- écran d'accueil du jeu ----------
@@ -83,7 +100,8 @@ function rulesHTML() {
   return `<details class="mw-rules"><summary>Les règles</summary>
     <div class="mw-rolepics">${rolePic('civil')}${rolePic('under')}${rolePic('white')}</div><p><b>Civils</b> : ils ont tous le même mot. <b>Undercover</b> : ils ont un mot proche, sans savoir qu’ils sont l’intrus. <b>Mister White</b> : il n’a aucun mot et doit bluffer.</p>
     <p>Chacun à son tour dit <b>un mot ou une courte phrase</b> sur son mot, sans être trop évident. Puis tout le monde vote pour éliminer quelqu’un, qui révèle son rôle.</p>
-    <p>Les <b>Civils</b> gagnent s’ils éliminent tous les intrus. Les <b>intrus</b> gagnent s’il ne reste plus qu’un Civil. Si <b>Mister White</b> est éliminé, il peut encore gagner en devinant le mot des Civils.</p></details>`;
+    <p>Les <b>Civils</b> gagnent s’ils éliminent tous les intrus. Les <b>intrus</b> gagnent s’il ne reste plus qu’un Civil. Si <b>Mister White</b> est éliminé, il peut encore gagner en devinant le mot des Civils.</p>
+    <p><b>Points</b> : à la fin de chaque partie, tous les joueurs du camp gagnant marquent, même éliminés. Civil : <b>2 pts</b>, Mister White : <b>6 pts</b>, Undercover : <b>10 pts</b>. Si Mister White devine le mot, lui seul marque. Les points s’additionnent d’une partie à l’autre pour le classement.</p></details>`;
 }
 function backBtn(label = 'Changer de mode') { return `<button class="mw-back" data-act="back">‹ ${label}</button>`; }
 
@@ -91,6 +109,7 @@ function backBtn(label = 'Changer de mode') { return `<button class="mw-back" da
 // MODE 1 : UN SEUL TÉLÉPHONE
 // =====================================================================
 let L = store.get(K + '_local', null) || { players: [], nU: 1, nW: 0, cats: [], game: null };
+L.scores = L.scores || {};
 const saveL = () => store.set(K + '_local', L);
 
 function localRender() {
@@ -100,7 +119,7 @@ function localRender() {
   if (g.step === 'play') return localPlay();
   if (g.step === 'vote') return localVote();
   if (g.step === 'reveal') return localReveal();
-  if (g.step === 'end') return endScreen(g.players.map(p => ({ name: p.name, role: p.role, alive: p.alive })), g.civil, g.under, g.winner, g.guess, true);
+  if (g.step === 'end') return endScreen(g.players.map(p => ({ name: p.name, role: p.role, alive: p.alive })), g.civil, g.under, g.winner, g.guess, true, true, localRank(g.gains || {}));
 }
 function settingsHTML(n, nU, nW, cats, editable = true) {
   const ok = valid(n, nU, nW);
@@ -120,7 +139,13 @@ function localSetup() {
     <form class="mw-add" data-form="lp" autocomplete="off"><input name="n" maxlength="18" placeholder="Prénom" enterkeyhint="done"><button>Ajouter</button></form>
     <div class="mw-chips">${L.players.map((p, i) => `<span class="mw-chip">${esc(p)}<button data-act="lp-del" data-i="${i}" aria-label="Supprimer">×</button></span>`).join('') || '<p class="mw-muted">Au moins 3 joueurs.</p>'}</div>
     ${settingsHTML(n, L.nU, L.nW, L.cats)}
-    <button class="mw-go" data-act="l-start"${valid(n, L.nU, L.nW) ? '' : ' disabled'}>Distribuer les mots</button>`;
+    <button class="mw-go" data-act="l-start"${valid(n, L.nU, L.nW) ? '' : ' disabled'}>Distribuer les mots</button>
+    ${Object.keys(L.scores).length ? rankHTML(localRank()) + `<button class="mw-link" data-act="l-reset">Remettre les points à zéro</button>` : ''}`;
+}
+function localRank(gains = {}) { return Object.keys(L.scores).filter(n => L.players.includes(n) || gains[n]).map(n => ({ name: n, pts: L.scores[n], gain: gains[n] || 0 })); }
+function localScore() {   // appelé une seule fois, quand la partie se termine
+  const g = L.game; if (g.scored) return; g.scored = true; g.gains = {};
+  g.players.forEach(p => { const x = gainOf(p.role, g.winner); L.scores[p.name] = (L.scores[p.name] || 0) + x; if (x) g.gains[p.name] = x; });
 }
 function localStart() {
   const n = L.players.length;
@@ -183,21 +208,22 @@ function localEliminate(i) {
 }
 function localAfterReveal() {
   const g = L.game, w = winner(g.players.map(p => p.role), g.players.map(p => p.alive));
-  if (w) { g.winner = w; g.step = 'end'; } else { g.round++; g.step = 'play'; }
+  if (w) { g.winner = w; g.step = 'end'; localScore(); } else { g.round++; g.step = 'play'; }
   saveL(); localRender();
 }
 function localGuess(text) {
   const g = L.game; g.guess = text.trim() || '…';
-  if (norm(g.guess) && norm(g.guess) === norm(g.civil)) { g.winner = 'white'; g.step = 'end'; saveL(); return localRender(); }
+  if (norm(g.guess) && norm(g.guess) === norm(g.civil)) { g.winner = 'white'; g.step = 'end'; localScore(); saveL(); return localRender(); }
   saveL(); localRender();
 }
 
 // ---------- écran de fin (commun aux deux modes) ----------
-function endScreen(players, civil, under, win, guess, isLocal, canReplay = true) {
+function endScreen(players, civil, under, win, guess, isLocal, canReplay = true, rank = null) {
   const title = win === 'civils' ? 'Les Civils gagnent' : win === 'white' ? 'Mister White gagne' : 'Les intrus gagnent';
   const sub = win === 'white' ? `Il a deviné le mot « ${esc(civil)} ».` : win === 'civils' ? 'Tous les intrus ont été démasqués.' : 'Il ne reste plus qu’un Civil.';
   ROOT.innerHTML = `<div class="mw-end mw-end-${win}">${rolePic(win === 'civils' ? 'civil' : win === 'white' ? 'white' : 'under')}<span>Fin de partie</span><b>${title}</b><em>${sub}</em></div>
     <div class="mw-box mw-words"><div><span>Civils</span><b>${esc(civil)}</b></div><div><span>Undercover</span><b>${esc(under)}</b></div></div>
+    ${rankHTML(rank)}
     <div class="mw-box"><p class="mw-label">Les rôles</p><ul class="mw-roles">${players.map(p => `<li class="mw-r-${p.role}${p.alive ? '' : ' out'}">${rolePic(p.role, 'xs')}<span>${esc(p.name)}</span><b>${ROLE[p.role]}</b></li>`).join('')}</ul></div>
     ${canReplay ? `<button class="mw-go" data-act="${isLocal ? 'l-replay' : 'o-replay'}">Rejouer</button>` : `<p class="mw-muted mw-center">L’hôte peut relancer une partie.</p>`}
     <button class="mw-link" data-act="${isLocal ? 'l-edit' : 'o-lobby'}">${isLocal ? 'Modifier les joueurs' : canReplay ? 'Retour au salon' : ''}</button>`;
@@ -286,8 +312,9 @@ function handle(d) {
   }
   else if (d.k === 'guess' && O.phase === 'guess' && O.last && d.pid === O.last.out) { O.last.guess = String(d.text || '').slice(0, 30); }
   else if (d.k === 'wg' && O.phase === 'guess' && O.last) { O.last.ok = !!d.ok; O.last.guess = d.text; O.phase = 'play'; }
-  else if (d.k === 'end' && d.roles) { O.end = d; O.phase = 'end'; }
-  else if (d.k === 'lobby') { Object.assign(O, { phase: 'lobby', end: null, last: null }); }
+  else if (d.k === 'end' && d.roles) { O.end = d; O.phase = 'end'; if (Array.isArray(d.scores)) O.scores = d.scores.map(x => ({ name: x.name, pts: x.pts, gain: 0 })); }
+  else if (d.k === 'lobby') { Object.assign(O, { phase: 'lobby', end: null, last: null }); if (Array.isArray(d.scores)) O.scores = d.scores; }
+  else if (d.k === 'scores' && Array.isArray(d.scores)) { O.scores = d.scores; }
 }
 // ----- l'hôte arbitre : dépouillement, révélations, fin de partie -----
 function hostSecret() { return store.get(roomKey(me.code), {}).secret || null; }
@@ -308,7 +335,7 @@ function hostTick() {
   if (O.phase === 'play') {
     // fin de partie ?
     const w = winner(O.order.map(p => sec.roles[p]), O.order.map(p => O.alive[p]));
-    if (w) { if (!O.end && O._endSent !== O.gid) { O._endSent = O.gid; send({ k: 'end', winner: w, roles: sec.roles, civil: sec.civil, under: sec.under }); } return; }
+    if (w) { if (!O.end && O._endSent !== O.gid) { O._endSent = O.gid; send({ k: 'end', winner: w, roles: sec.roles, civil: sec.civil, under: sec.under, scores: hostScore(sec, w) }); } return; }
     // tout le monde a voté : dépouillement
     const aliveIds = O.order.filter(p => O.alive[p]), v = O.votes[O.r] || {};
     if (aliveIds.length && aliveIds.every(p => v[p]) && O._resSent !== O.gid + ':' + O.r) {
@@ -322,8 +349,22 @@ function hostTick() {
     O._wgSent = O.gid + ':' + O.r;
     const ok = !!norm(O.last.guess) && norm(O.last.guess) === norm(sec.civil);
     send({ k: 'wg', ok, text: O.last.guess });
-    if (ok) { O._endSent = O.gid; setTimeout(() => send({ k: 'end', winner: 'white', roles: sec.roles, civil: sec.civil, under: sec.under }), 300); }
+    if (ok) { O._endSent = O.gid; const sc = hostScore(sec, 'white'); setTimeout(() => send({ k: 'end', winner: 'white', roles: sec.roles, civil: sec.civil, under: sec.under, scores: sc }), 300); }
   }
+}
+// l'hôte tient le classement de la salle (par joueur), et l'envoie à tout le monde
+function hostRank(gains = {}) {
+  const sc = store.get(roomKey(me.code), {}).scores || {};
+  return Object.keys(sc).filter(pid => gains[pid] !== undefined || O.players.some(p => p.pid === pid)).map(pid => ({ name: (O.players.find(p => p.pid === pid) || {}).name || sc[pid].name, pts: sc[pid].pts, gain: gains[pid] || 0 }));
+}
+function hostScore(sec, win) {
+  const r = store.get(roomKey(me.code), {}); r.scores = r.scores || {};
+  if (r.scoredGid === sec.gid) return hostRank({});
+  r.scoredGid = sec.gid; const gains = {};
+  Object.keys(sec.roles).forEach(pid => { const x = gainOf(sec.roles[pid], win), cur = r.scores[pid] || { name: nameOf(pid), pts: 0 };
+    cur.name = nameOf(pid); cur.pts += x; r.scores[pid] = cur; gains[pid] = x; });
+  store.set(roomKey(me.code), r);
+  return hostRank(gains);
 }
 async function hostStart() {
   const players = O.players.slice(), n = players.length, { nU, nW, cats } = O.cfg;
@@ -407,7 +448,7 @@ function onlineRender_() {
   if (O.phase === 'lobby') return lobby();
   if (O.phase === 'end') {
     const e = O.end, players = O.order.map(p => ({ name: nameOf(p), role: e.roles[p], alive: O.alive[p] }));
-    return endScreen(players, e.civil, e.under, e.winner, null, false, me.host);
+    return endScreen(players, e.civil, e.under, e.winner, null, false, me.host, e.scores || null);
   }
   if (!O.order.includes(me.pid)) { ROOT.innerHTML = `${netHTML()}<div class="mw-box mw-center"><b>Partie en cours</b><p class="mw-muted">Tu joueras à la prochaine. L’hôte peut relancer quand celle-ci est finie.</p></div>${leaveBtn()}`; return; }
   return game();
@@ -422,6 +463,7 @@ function lobby() {
     <div class="mw-chips">${O.players.map(p => `<span class="mw-chip${p.pid === me.pid ? ' me' : ''}">${esc(p.name)}${p.pid === me.pid ? ' (toi)' : ''}</span>`).join('')}</div>
     ${me.host ? settingsHTML(n, O.cfg.nU, O.cfg.nW, O.cfg.cats) + `<button class="mw-go" data-act="o-start"${valid(n, O.cfg.nU, O.cfg.nW) ? '' : ' disabled'}>Lancer la partie</button>`
               : `${settingsHTML(n, O.cfg.nU, O.cfg.nW, O.cfg.cats, false)}<p class="mw-muted mw-center">En attente que l’hôte lance la partie…</p>`}
+    ${me.host ? (() => { const r = hostRank(); return r.length ? rankHTML(r) + `<button class="mw-link" data-act="o-reset">Remettre les points à zéro</button>` : ''; })() : rankHTML(O.scores)}
     ${leaveBtn()}`;
 }
 function game() {
@@ -483,6 +525,7 @@ ROOT.addEventListener('click', e => {
   // mode un seul téléphone
   if (a === 'lp-del') { L.players.splice(+b.dataset.i, 1); Object.assign(L, defaults(L.players.length)); saveL(); return render(); }
   if (a === 'l-start') return localStart();
+  if (a === 'l-reset') { if (!confirm('Remettre tous les points à zéro ?')) return; L.scores = {}; saveL(); return render(); }
   if (a === 'l-show') { L.game.shown = true; saveL(); return render(); }
   if (a === 'l-hide') { const g = L.game; g.shown = false; g.dealIdx++; if (g.dealIdx >= g.players.length) g.step = 'play'; saveL(); return render(); }
   if (a === 'l-vote') { L.game.step = 'vote'; saveL(); return render(); }
@@ -496,7 +539,8 @@ ROOT.addEventListener('click', e => {
   if (a === 'o-start') return hostStart();
   if (a === 'o-vote') { send({ k: 'vote', r: O.r, pid: me.pid, t: b.dataset.p }); (O.votes[O.r] = O.votes[O.r] || {})[me.pid] = b.dataset.p; buzz(8); return render(); }
   if (a === 'o-replay') return hostStart();
-  if (a === 'o-lobby') { if (me.host && O.phase !== 'end' && !confirm('Arrêter la partie et revenir au salon ?')) return; if (me.host) send({ k: 'lobby' }); return; }
+  if (a === 'o-lobby') { if (me.host && O.phase !== 'end' && !confirm('Arrêter la partie et revenir au salon ?')) return; if (me.host) send({ k: 'lobby', scores: hostRank() }); return; }
+  if (a === 'o-reset') { if (!confirm('Remettre tous les points à zéro ?')) return; const r = store.get(roomKey(me.code), {}); r.scores = {}; store.set(roomKey(me.code), r); O.scores = []; send({ k: 'scores', scores: [] }); return render(); }
   if (a === 'o-leave') { if (confirm('Quitter la partie ?')) leaveRoom(); return; }
 });
 ROOT.addEventListener('submit', e => {
